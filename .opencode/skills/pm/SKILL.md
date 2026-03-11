@@ -82,24 +82,33 @@ Before writing anything, ask questions to surface what is known and what is miss
 
 ## Step 2 — User Story Map
 
-A User Story Map organises stories by **Activities → Tasks → Stories** and makes the business flow and scope visible at a glance.
+A User Story Map organises stories by the **job the user is trying to get done**, following the real sequential flow end-to-end — not by UI screens or product features. The map traces every step in the order it happens, including system actions and third-party handoffs, so the full experience is visible in one place.
+
+> Reference: [User Story Mapping — Nielsen Norman Group](https://www.nngroup.com/articles/user-story-mapping)
 
 ### Structure
 
 ```
-ACTIVITY        (high-level thing the user wants to accomplish)
-  └── TASK      (step the user takes within the activity)
-        └── USER STORY   (specific need: "As a [role] I want to [action] so that [benefit]")
-              └── ACCEPTANCE CRITERIA  (conditions that must be true for the story to be done)
+ACTIVITY   (the high-level goal the user wants to accomplish — informed by research)
+  └── STEP (a sequential stage in completing that goal — can involve any actor: user, system, 3rd party)
+        └── USER STORY   ("As a [role] I want to [action] so that [benefit]")
+              └── ACCEPTANCE CRITERIA  (observable outcomes that confirm the step is done)
+              └── BUSINESS CONDITIONS  (rules, limits, constraints that govern this step)
 ```
+
+**Key rules:**
+- Steps are ordered by **when they happen in the job**, not by which UI screen they belong to.
+- A step can belong to any actor — user, backend system, email provider, payment gateway, etc. Include all of them.
+- Stories describe **what the user (or actor) wants to accomplish at that step**, not what button they click.
 
 ### Output Format
 
 ```
 ## User Story Map — [Feature Name]
 
-### Activity: [Name]
-#### Task: [Name]
+### Activity: [High-level goal the user wants to accomplish]
+
+#### Step [N] — [Short description of what happens] · Actor: [User | System | External Service]
 
 US-[FEATURE]-[SEQ]: As a [role], I want to [action], so that [benefit].
 
@@ -108,7 +117,7 @@ Acceptance Criteria:
   AC-2: Given [context], when [action], then [observable outcome].
 
 Business Conditions:
-  BC-1: [Rule that governs this story — constraint, limit, allowlist, etc.]
+  BC-1: [Rule that governs this step — constraint, limit, allowlist, etc.]
   BC-2: ...
 
 Priority: Must Have | Should Have | Could Have | Won't Have (MoSCoW)
@@ -119,51 +128,91 @@ Priority: Must Have | Should Have | Could Have | Won't Have (MoSCoW)
 ```
 ## User Story Map — User Registration
 
-### Activity: Create an Account
+### Activity: Register to the platform to become a member
 
-#### Task: Fill in Registration Form
+#### Step 1 — User fills in the account form · Actor: User
 
-US-REG-001: As a new visitor, I want to register with my email and password,
-            so that I can access the platform.
+US-REG-001: As a new visitor, I want to fill in my display name, email, and password
+            and submit the form, so that I can create an account on the platform.
 
 Acceptance Criteria:
-  AC-1: Given I submit a valid display name, email, and password,
-        when the system processes the request,
-        then my account is created and I am redirected to the dashboard.
-  AC-2: Given I submit an email that is already registered,
-        when the system checks for duplicates,
-        then I see an inline error and my account is not created.
-  AC-3: Given I submit a password that does not meet the policy,
-        when the system validates the input,
-        then I see a specific error message describing the policy requirement.
+  AC-1: Given I enter a valid display name, email, and password,
+        when I click Submit,
+        then my details are sent to the system for processing.
+  AC-2: Given I enter invalid data (e.g. weak password, bad email format),
+        when I click Submit,
+        then I see inline field errors describing each problem and nothing is submitted.
 
 Business Conditions:
-  BC-1: Display name must be 3–30 characters, no spaces, alphanumeric only.
+  BC-1: Display name must be 3–30 characters, alphanumeric only, no spaces.
   BC-2: Email domain must be on the approved whitelist.
-  BC-3: Password must be at least 8 characters, contain one uppercase letter,
-        one number, and one special character.
-  BC-4: A verification email must be sent within 60 seconds of successful registration.
+  BC-3: Password must be ≥8 characters with ≥1 uppercase, ≥1 digit, ≥1 special character.
 
 Priority: Must Have
 
 ---
 
-#### Task: Verify Email Address
+#### Step 2 — System creates the account and sends a verification email · Actor: System → Mail Provider
 
-US-REG-002: As a newly registered user, I want to verify my email address,
-            so that the platform can confirm I own the account.
+US-REG-002: As the system, I want to validate the submission, create the account, and dispatch
+            a verification email, so that the user can confirm ownership of their address.
 
 Acceptance Criteria:
-  AC-1: Given I click the verification link in my email,
-        when the token is valid and not expired,
-        then my account is marked as verified and I can log in.
-  AC-2: Given the verification link has expired,
-        when I click it,
-        then I see a message and an option to resend the verification email.
+  AC-1: Given all fields pass validation and the email is not already registered,
+        when the system processes the request,
+        then an account is created and a verification email is dispatched within 60 seconds.
+  AC-2: Given the email is already registered,
+        when the system checks for duplicates,
+        then no account is created and an EMAIL_ALREADY_EXISTS error is returned.
+  AC-3: Given the mail provider is temporarily unavailable,
+        when the system tries to dispatch the email,
+        then the account is still created and email delivery is retried up to 3 times.
+
+Business Conditions:
+  BC-1: The password must be stored as a bcrypt hash — never in plaintext.
+  BC-2: The verification token must be cryptographically random and at least 32 bytes.
+  BC-3: The verification email must be sent within 60 seconds of account creation.
+
+Priority: Must Have
+
+---
+
+#### Step 3 — User opens the verification link from their inbox · Actor: User ← Mail Provider
+
+US-REG-003: As a newly registered user, I want to receive a verification email and click the link,
+            so that I can prove I own the email address I registered with.
+
+Acceptance Criteria:
+  AC-1: Given the verification email has been delivered,
+        when I open it and click the link,
+        then I am taken to the platform's verification endpoint.
+  AC-2: Given the email has not arrived after waiting,
+        when I request a resend,
+        then a new verification email is dispatched to my address.
+
+Business Conditions:
+  BC-1: The user may request a maximum of 3 resend attempts per hour.
+
+Priority: Must Have
+
+---
+
+#### Step 4 — System validates the token and activates the account · Actor: System
+
+US-REG-004: As the system, I want to validate the verification token and mark the account as
+            verified, so that the user is confirmed as the owner of the email address.
+
+Acceptance Criteria:
+  AC-1: Given the token is valid and not expired,
+        when the system validates it,
+        then the account is marked verified and the user is redirected to the dashboard.
+  AC-2: Given the token has expired,
+        when the system validates it,
+        then the user sees an expiry message with an option to request a new email.
 
 Business Conditions:
   BC-1: Verification tokens expire after 24 hours.
-  BC-2: A user may request a maximum of 3 resend attempts per hour.
+  BC-2: A used or expired token is invalidated immediately and cannot be reused.
 
 Priority: Must Have
 ```
