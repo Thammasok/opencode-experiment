@@ -1,0 +1,46 @@
+flowchart LR
+    %% Nodes
+    subgraph PD["Product Discovery"]
+        BA["Requirement Gathering (BA)"]
+        SWT["Test Design (SWT)"]
+        UX["UX/UI Design (UX/UI)"]
+    end
+
+    subgraph ARCH["Architecture Design"]
+        SAD["Software Architecture (SAD)"]
+        API["API Design (API)"]
+        DB["Database Design (DB)"]
+    end
+
+    subgraph DEVLOOP["Development Loop"]
+        TDD["Write Test First (TDD)"]
+        INT["Integrate"]
+        TESTALL["Test All"]
+        SCRIPT["API Test Script (software-tester-automation)"]
+    end
+
+    PM["Breakdown Scenario (PM)"]
+    DEV["Breakdown Development Task (Software Engineer)"]
+    ORC["AI Orchestrator (Software Engineer)"]
+    SEL["Select new Scenario / Case"]
+    UAT["Product Review / UAT (PM + Software Tester)"]
+    HUMAN["Product Review (Human)"]
+    PASS{{"is Pass?"}}
+    CR["Create Change Request Task (PM / Human)"]
+
+    %% Edge connections between nodes
+    PD --> PM
+    PM --> SAD
+    PM --> API
+    PM --> DB
+    ARCH --> DEV
+    DEV --> ORC
+    ORC --> SEL
+    SEL --> DEVLOOP
+    TDD --> INT --> TESTALL --> SCRIPT
+    DEVLOOP --> UAT
+    UAT --> HUMAN
+    HUMAN --> PASS
+    PASS -- Yes --> SEL
+    PASS -- No --> CR
+    CR --> DEVLOOP

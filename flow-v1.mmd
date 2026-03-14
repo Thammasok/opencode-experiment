@@ -1,0 +1,51 @@
+flowchart LR
+    %% Nodes
+    subgraph PD["Product Discovery"]
+        BA["Requirement Gathering\n(BA)"]
+        SWT["Test Design\n(SWT)"]
+        UX["UX/UI Design"]
+    end
+
+    PM["Breakdown Scenarios\ninto Iterations\n(PM)"]
+
+    subgraph ITERATION["Iteration — one scenario at a time"]
+        ORC["AI Orchestrator\n(receives SC-xxx + TC-xxx)"]
+
+        subgraph ARCH["Just-enough Architecture\n(per scenario)"]
+            APIC["API Contract"]
+            DBS["DB Schema"]
+        end
+
+        subgraph DEVLOOP["Development Loop"]
+            TDD["Write Failing Test\n(TDD Red)"]
+            IMPL["Implement\n(TDD Green)"]
+            REFAC["Refactor"]
+            INT["Integrate"]
+            TESTALL["Test All\n(automated suite)"]
+        end
+    end
+
+    UAT["UAT\n(PM + Software Tester)"]
+    HUMAN["Human Review"]
+    PASS{{"is Pass?"}}
+    BUG["Fix Bug"]
+    REQ["Revisit Requirement\n(BA / PM)"]
+    RETRO["Iteration Retrospect\n(PM adapts backlog)"]
+
+    %% Edge connections between nodes
+    PD --> PM
+    PM --> ORC
+    ORC --> ARCH
+    APIC --> TDD
+    DBS --> TDD
+    TDD --> IMPL --> REFAC --> INT --> TESTALL
+    TESTALL --> UAT
+    UAT --> HUMAN
+    HUMAN --> PASS
+
+    PASS -- "Yes\nnext scenario" --> ORC
+    PASS -- "No: bug" --> BUG --> DEVLOOP
+    PASS -- "No: wrong\nrequirement" --> REQ --> PM
+
+    ORC -- "iteration done\n(all scenarios pass)" --> RETRO
+    RETRO -- "next iteration" --> PM
