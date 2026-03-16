@@ -1,0 +1,71 @@
+{
+  "$schema": "https://tr.designtokens.org/format/",
+  "$description": "Border radius and width scales, plus semantic component radii.",
+
+  "radius": {
+    "scale": {
+      "none": { "$value": "0px",      "$type": "dimension" },
+      "xs":   { "$value": "2px",      "$type": "dimension" },
+      "sm":   { "$value": "4px",      "$type": "dimension" },
+      "md":   { "$value": "6px",      "$type": "dimension" },
+      "lg":   { "$value": "8px",      "$type": "dimension" },
+      "xl":   { "$value": "12px",     "$type": "dimension" },
+      "2xl":  { "$value": "16px",     "$type": "dimension" },
+      "3xl":  { "$value": "24px",     "$type": "dimension" },
+      "full": { "$value": "9999px",   "$type": "dimension" }
+    },
+
+    "semantic": {
+      "$description": "Component-specific radii. Reference scale values. Driven by design-system.config.json > theme.radius preset.",
+
+      "presets": {
+        "$description": "Set theme.radius in config to one of: sharp | sm | md | lg | xl | pill",
+        "sharp": {
+          "button": "0px", "input": "0px", "card": "0px", "badge": "2px", "modal": "4px"
+        },
+        "sm": {
+          "button": "4px", "input": "4px", "card": "4px", "badge": "4px", "modal": "6px"
+        },
+        "md": {
+          "button": "6px", "input": "6px", "card": "8px", "badge": "4px", "modal": "8px"
+        },
+        "lg": {
+          "button": "8px", "input": "8px", "card": "12px", "badge": "6px", "modal": "12px"
+        },
+        "xl": {
+          "button": "12px", "input": "12px", "card": "16px", "badge": "8px", "modal": "16px"
+        },
+        "pill": {
+          "button": "9999px", "input": "9999px", "card": "16px", "badge": "9999px", "modal": "16px"
+        }
+      },
+
+      "button":  { "$value": "{radius.scale.md}",   "$type": "dimension" },
+      "input":   { "$value": "{radius.scale.md}",   "$type": "dimension" },
+      "card":    { "$value": "{radius.scale.lg}",   "$type": "dimension" },
+      "badge":   { "$value": "{radius.scale.sm}",   "$type": "dimension" },
+      "modal":   { "$value": "{radius.scale.xl}",   "$type": "dimension" },
+      "drawer":  { "$value": "{radius.scale.none}", "$type": "dimension" },
+      "tooltip": { "$value": "{radius.scale.sm}",   "$type": "dimension" },
+      "avatar":  { "$value": "{radius.scale.full}", "$type": "dimension" },
+      "tag":     { "$value": "{radius.scale.full}", "$type": "dimension" }
+    }
+  },
+
+  "width": {
+    "scale": {
+      "0":   { "$value": "0px",  "$type": "dimension" },
+      "1":   { "$value": "1px",  "$type": "dimension" },
+      "2":   { "$value": "2px",  "$type": "dimension" },
+      "4":   { "$value": "4px",  "$type": "dimension" },
+      "8":   { "$value": "8px",  "$type": "dimension" }
+    },
+
+    "semantic": {
+      "thin":    { "$value": "{width.scale.1}", "$type": "dimension" },
+      "default": { "$value": "{width.scale.1}", "$type": "dimension" },
+      "medium":  { "$value": "{width.scale.2}", "$type": "dimension" },
+      "thick":   { "$value": "{width.scale.4}", "$type": "dimension" }
+    }
+  }
+}

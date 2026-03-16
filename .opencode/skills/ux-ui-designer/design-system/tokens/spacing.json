@@ -1,0 +1,90 @@
+{
+  "$schema": "https://tr.designtokens.org/format/",
+  "$description": "Spacing system. 4px base unit, 21 scale values, semantic aliases for components and layouts.",
+
+  "scale": {
+    "$description": "Base unit = 4px. Numeric key × 4 = pixel value.",
+    "0":    { "$value": "0px",    "$type": "dimension" },
+    "0.5":  { "$value": "2px",    "$type": "dimension" },
+    "1":    { "$value": "4px",    "$type": "dimension" },
+    "1.5":  { "$value": "6px",    "$type": "dimension" },
+    "2":    { "$value": "8px",    "$type": "dimension" },
+    "2.5":  { "$value": "10px",   "$type": "dimension" },
+    "3":    { "$value": "12px",   "$type": "dimension" },
+    "3.5":  { "$value": "14px",   "$type": "dimension" },
+    "4":    { "$value": "16px",   "$type": "dimension" },
+    "5":    { "$value": "20px",   "$type": "dimension" },
+    "6":    { "$value": "24px",   "$type": "dimension" },
+    "7":    { "$value": "28px",   "$type": "dimension" },
+    "8":    { "$value": "32px",   "$type": "dimension" },
+    "9":    { "$value": "36px",   "$type": "dimension" },
+    "10":   { "$value": "40px",   "$type": "dimension" },
+    "12":   { "$value": "48px",   "$type": "dimension" },
+    "14":   { "$value": "56px",   "$type": "dimension" },
+    "16":   { "$value": "64px",   "$type": "dimension" },
+    "20":   { "$value": "80px",   "$type": "dimension" },
+    "24":   { "$value": "96px",   "$type": "dimension" },
+    "32":   { "$value": "128px",  "$type": "dimension" }
+  },
+
+  "semantic": {
+    "$description": "Intent-based spacing aliases. Use in component and layout code.",
+
+    "componentPadding": {
+      "xs":  { "$value": "{scale.1}",   "$type": "dimension", "$px": "4px"  },
+      "sm":  { "$value": "{scale.2}",   "$type": "dimension", "$px": "8px"  },
+      "md":  { "$value": "{scale.3}",   "$type": "dimension", "$px": "12px" },
+      "lg":  { "$value": "{scale.4}",   "$type": "dimension", "$px": "16px" },
+      "xl":  { "$value": "{scale.6}",   "$type": "dimension", "$px": "24px" },
+      "2xl": { "$value": "{scale.8}",   "$type": "dimension", "$px": "32px" }
+    },
+
+    "gap": {
+      "xs":  { "$value": "{scale.1}",   "$type": "dimension" },
+      "sm":  { "$value": "{scale.2}",   "$type": "dimension" },
+      "md":  { "$value": "{scale.4}",   "$type": "dimension" },
+      "lg":  { "$value": "{scale.6}",   "$type": "dimension" },
+      "xl":  { "$value": "{scale.8}",   "$type": "dimension" },
+      "2xl": { "$value": "{scale.12}",  "$type": "dimension" }
+    },
+
+    "section": {
+      "sm":  { "$value": "{scale.8}",   "$type": "dimension", "$px": "32px"  },
+      "md":  { "$value": "{scale.12}",  "$type": "dimension", "$px": "48px"  },
+      "lg":  { "$value": "{scale.16}",  "$type": "dimension", "$px": "64px"  },
+      "xl":  { "$value": "{scale.20}",  "$type": "dimension", "$px": "80px"  },
+      "2xl": { "$value": "{scale.24}",  "$type": "dimension", "$px": "96px"  }
+    },
+
+    "inset": {
+      "$description": "Consistent padding inside containers",
+      "sm":  { "$value": "{scale.4}",   "$type": "dimension" },
+      "md":  { "$value": "{scale.6}",   "$type": "dimension" },
+      "lg":  { "$value": "{scale.8}",   "$type": "dimension" }
+    },
+
+    "touchTarget": {
+      "$description": "Minimum 44×44px per WCAG 2.5.5",
+      "min": { "$value": "44px", "$type": "dimension" }
+    }
+  },
+
+  "density": {
+    "$description": "Density multipliers: compact = 0.75×, comfortable = 1×, spacious = 1.25×. Applied via design-system.config.json > theme.density.",
+    "compact": {
+      "factor": { "$value": "0.75", "$type": "number" },
+      "componentPaddingMd": { "$value": "8px",  "$type": "dimension" },
+      "gapMd":              { "$value": "8px",  "$type": "dimension" }
+    },
+    "comfortable": {
+      "factor": { "$value": "1",    "$type": "number" },
+      "componentPaddingMd": { "$value": "12px", "$type": "dimension" },
+      "gapMd":              { "$value": "16px", "$type": "dimension" }
+    },
+    "spacious": {
+      "factor": { "$value": "1.25", "$type": "number" },
+      "componentPaddingMd": { "$value": "16px", "$type": "dimension" },
+      "gapMd":              { "$value": "20px", "$type": "dimension" }
+    }
+  }
+}

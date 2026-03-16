@@ -1,0 +1,66 @@
+{
+  "$schema": "https://tr.designtokens.org/format/",
+  "$description": "Responsive system. Mobile-first breakpoints, containers, grid, and z-index scale.",
+
+  "breakpoints": {
+    "$description": "Mobile-first min-width breakpoints. Use as @media (min-width: value).",
+    "xs":  { "$value": "320px",  "$type": "dimension", "$label": "Small phone" },
+    "sm":  { "$value": "640px",  "$type": "dimension", "$label": "Large phone / small tablet" },
+    "md":  { "$value": "768px",  "$type": "dimension", "$label": "Tablet portrait" },
+    "lg":  { "$value": "1024px", "$type": "dimension", "$label": "Tablet landscape / small desktop" },
+    "xl":  { "$value": "1280px", "$type": "dimension", "$label": "Desktop" },
+    "2xl": { "$value": "1536px", "$type": "dimension", "$label": "Large desktop / wide screen" }
+  },
+
+  "containers": {
+    "$description": "Max-width containers, centered with horizontal padding.",
+    "xs":   { "$value": "320px",  "$type": "dimension" },
+    "sm":   { "$value": "640px",  "$type": "dimension" },
+    "md":   { "$value": "768px",  "$type": "dimension" },
+    "lg":   { "$value": "1024px", "$type": "dimension" },
+    "xl":   { "$value": "1280px", "$type": "dimension" },
+    "2xl":  { "$value": "1440px", "$type": "dimension" },
+    "full": { "$value": "100%",   "$type": "dimension" },
+    "prose":{ "$value": "65ch",   "$type": "dimension", "$description": "Optimal line length for reading" }
+  },
+
+  "grid": {
+    "$description": "Responsive grid columns per breakpoint.",
+    "columns": {
+      "xs":  { "$value": "4",  "$type": "number" },
+      "sm":  { "$value": "8",  "$type": "number" },
+      "md":  { "$value": "12", "$type": "number" },
+      "lg":  { "$value": "12", "$type": "number" },
+      "xl":  { "$value": "12", "$type": "number" },
+      "2xl": { "$value": "12", "$type": "number" }
+    },
+    "gutter": {
+      "xs":  { "$value": "16px", "$type": "dimension" },
+      "sm":  { "$value": "16px", "$type": "dimension" },
+      "md":  { "$value": "24px", "$type": "dimension" },
+      "lg":  { "$value": "32px", "$type": "dimension" },
+      "xl":  { "$value": "32px", "$type": "dimension" }
+    },
+    "margin": {
+      "xs":  { "$value": "16px", "$type": "dimension" },
+      "sm":  { "$value": "24px", "$type": "dimension" },
+      "md":  { "$value": "32px", "$type": "dimension" },
+      "lg":  { "$value": "40px", "$type": "dimension" },
+      "xl":  { "$value": "80px", "$type": "dimension" }
+    }
+  },
+
+  "zIndex": {
+    "$description": "Z-index scale. Higher = in front. Use named values, never magic numbers.",
+    "hide":    { "$value": "-1",   "$type": "number" },
+    "base":    { "$value": "0",    "$type": "number" },
+    "raised":  { "$value": "10",   "$type": "number",  "$usage": "Cards, slightly raised elements" },
+    "dropdown":{ "$value": "100",  "$type": "number",  "$usage": "Dropdowns, select menus" },
+    "sticky":  { "$value": "200",  "$type": "number",  "$usage": "Sticky headers, sidebars" },
+    "overlay": { "$value": "300",  "$type": "number",  "$usage": "Modal backdrops" },
+    "modal":   { "$value": "400",  "$type": "number",  "$usage": "Modals, dialogs, drawers" },
+    "popover": { "$value": "500",  "$type": "number",  "$usage": "Popovers, tooltips" },
+    "toast":   { "$value": "600",  "$type": "number",  "$usage": "Toast notifications" },
+    "top":     { "$value": "9999", "$type": "number",  "$usage": "Emergency top layer" }
+  }
+}

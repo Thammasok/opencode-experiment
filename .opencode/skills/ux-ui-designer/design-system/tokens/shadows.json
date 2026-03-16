@@ -1,0 +1,108 @@
+{
+  "$schema": "https://tr.designtokens.org/format/",
+  "$description": "Shadow system. 5-level elevation, inner shadows, brand-colored shadows, and focus rings.",
+
+  "elevation": {
+    "none": {
+      "$value": "none",
+      "$type": "shadow",
+      "$description": "No elevation — flush with surface"
+    },
+    "xs": {
+      "$value": "0 1px 2px 0 rgba(0,0,0,0.05)",
+      "$type": "shadow",
+      "$description": "Level 1 — Subtle lift: badges, chips"
+    },
+    "sm": {
+      "$value": "0 1px 3px 0 rgba(0,0,0,0.10), 0 1px 2px -1px rgba(0,0,0,0.10)",
+      "$type": "shadow",
+      "$description": "Level 2 — Cards, buttons, inputs"
+    },
+    "md": {
+      "$value": "0 4px 6px -1px rgba(0,0,0,0.10), 0 2px 4px -2px rgba(0,0,0,0.10)",
+      "$type": "shadow",
+      "$description": "Level 3 — Dropdowns, popovers"
+    },
+    "lg": {
+      "$value": "0 10px 15px -3px rgba(0,0,0,0.10), 0 4px 6px -4px rgba(0,0,0,0.10)",
+      "$type": "shadow",
+      "$description": "Level 4 — Modals, drawers"
+    },
+    "xl": {
+      "$value": "0 20px 25px -5px rgba(0,0,0,0.10), 0 8px 10px -6px rgba(0,0,0,0.10)",
+      "$type": "shadow",
+      "$description": "Level 5 — Dialogs, floating panels"
+    },
+    "2xl": {
+      "$value": "0 25px 50px -12px rgba(0,0,0,0.25)",
+      "$type": "shadow",
+      "$description": "Level 6 — Hero sections, marketing cards"
+    }
+  },
+
+  "inner": {
+    "sm": {
+      "$value": "inset 0 1px 2px 0 rgba(0,0,0,0.05)",
+      "$type": "shadow",
+      "$description": "Inset input fields, pressed states"
+    },
+    "md": {
+      "$value": "inset 0 2px 4px 0 rgba(0,0,0,0.06)",
+      "$type": "shadow",
+      "$description": "Deeper inset for well elements"
+    }
+  },
+
+  "colored": {
+    "$description": "Brand-colored glows. Use sparingly for CTAs and highlights.",
+    "primary": {
+      "$value": "0 4px 14px 0 rgba(37,99,235,0.39)",
+      "$type": "shadow",
+      "$description": "Blue primary glow"
+    },
+    "success": {
+      "$value": "0 4px 14px 0 rgba(22,163,74,0.39)",
+      "$type": "shadow"
+    },
+    "error": {
+      "$value": "0 4px 14px 0 rgba(220,38,38,0.39)",
+      "$type": "shadow"
+    }
+  },
+
+  "focusRing": {
+    "$description": "Accessibility focus indicators. Always use on interactive elements.",
+    "default": {
+      "$value": "0 0 0 3px rgba(37,99,235,0.45)",
+      "$type": "shadow",
+      "$description": "Standard focus ring — WCAG 2.4.11 compliant"
+    },
+    "error": {
+      "$value": "0 0 0 3px rgba(220,38,38,0.45)",
+      "$type": "shadow"
+    },
+    "white": {
+      "$value": "0 0 0 2px #ffffff, 0 0 0 4px rgba(37,99,235,0.45)",
+      "$type": "shadow",
+      "$description": "Use on dark/colored backgrounds"
+    }
+  },
+
+  "dark": {
+    "$description": "Dark mode shadow overrides — softer, less harsh",
+    "elevation": {
+      "sm": {
+        "$value": "0 1px 3px 0 rgba(0,0,0,0.40), 0 1px 2px -1px rgba(0,0,0,0.40)",
+        "$type": "shadow"
+      },
+      "md": {
+        "$value": "0 4px 6px -1px rgba(0,0,0,0.40), 0 2px 4px -2px rgba(0,0,0,0.40)",
+        "$type": "shadow"
+      },
+      "lg": {
+        "$value": "0 10px 15px -3px rgba(0,0,0,0.50), 0 4px 6px -4px rgba(0,0,0,0.50)",
+        "$type": "shadow"
+      }
+    }
+  }
+}

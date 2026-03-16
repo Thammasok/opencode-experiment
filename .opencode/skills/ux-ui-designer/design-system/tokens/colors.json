@@ -1,0 +1,219 @@
+{
+  "$schema": "https://tr.designtokens.org/format/",
+  "$description": "3-tier color system: palette → semantic → component. Supports light and dark modes.",
+
+  "palette": {
+    "$description": "Tier 1 — Raw color scale. 6 hues × 11 shades. Never use palette tokens in components directly.",
+    "blue": {
+      "50":  { "$value": "#eff6ff", "$type": "color" },
+      "100": { "$value": "#dbeafe", "$type": "color" },
+      "200": { "$value": "#bfdbfe", "$type": "color" },
+      "300": { "$value": "#93c5fd", "$type": "color" },
+      "400": { "$value": "#60a5fa", "$type": "color" },
+      "500": { "$value": "#3b82f6", "$type": "color" },
+      "600": { "$value": "#2563eb", "$type": "color" },
+      "700": { "$value": "#1d4ed8", "$type": "color" },
+      "800": { "$value": "#1e40af", "$type": "color" },
+      "900": { "$value": "#1e3a8a", "$type": "color" },
+      "950": { "$value": "#172554", "$type": "color" }
+    },
+    "green": {
+      "50":  { "$value": "#f0fdf4", "$type": "color" },
+      "100": { "$value": "#dcfce7", "$type": "color" },
+      "200": { "$value": "#bbf7d0", "$type": "color" },
+      "300": { "$value": "#86efac", "$type": "color" },
+      "400": { "$value": "#4ade80", "$type": "color" },
+      "500": { "$value": "#22c55e", "$type": "color" },
+      "600": { "$value": "#16a34a", "$type": "color" },
+      "700": { "$value": "#15803d", "$type": "color" },
+      "800": { "$value": "#166534", "$type": "color" },
+      "900": { "$value": "#14532d", "$type": "color" },
+      "950": { "$value": "#052e16", "$type": "color" }
+    },
+    "red": {
+      "50":  { "$value": "#fef2f2", "$type": "color" },
+      "100": { "$value": "#fee2e2", "$type": "color" },
+      "200": { "$value": "#fecaca", "$type": "color" },
+      "300": { "$value": "#fca5a5", "$type": "color" },
+      "400": { "$value": "#f87171", "$type": "color" },
+      "500": { "$value": "#ef4444", "$type": "color" },
+      "600": { "$value": "#dc2626", "$type": "color" },
+      "700": { "$value": "#b91c1c", "$type": "color" },
+      "800": { "$value": "#991b1b", "$type": "color" },
+      "900": { "$value": "#7f1d1d", "$type": "color" },
+      "950": { "$value": "#450a0a", "$type": "color" }
+    },
+    "yellow": {
+      "50":  { "$value": "#fefce8", "$type": "color" },
+      "100": { "$value": "#fef9c3", "$type": "color" },
+      "200": { "$value": "#fef08a", "$type": "color" },
+      "300": { "$value": "#fde047", "$type": "color" },
+      "400": { "$value": "#facc15", "$type": "color" },
+      "500": { "$value": "#eab308", "$type": "color" },
+      "600": { "$value": "#ca8a04", "$type": "color" },
+      "700": { "$value": "#a16207", "$type": "color" },
+      "800": { "$value": "#854d0e", "$type": "color" },
+      "900": { "$value": "#713f12", "$type": "color" },
+      "950": { "$value": "#422006", "$type": "color" }
+    },
+    "purple": {
+      "50":  { "$value": "#faf5ff", "$type": "color" },
+      "100": { "$value": "#f3e8ff", "$type": "color" },
+      "200": { "$value": "#e9d5ff", "$type": "color" },
+      "300": { "$value": "#d8b4fe", "$type": "color" },
+      "400": { "$value": "#c084fc", "$type": "color" },
+      "500": { "$value": "#a855f7", "$type": "color" },
+      "600": { "$value": "#9333ea", "$type": "color" },
+      "700": { "$value": "#7e22ce", "$type": "color" },
+      "800": { "$value": "#6b21a8", "$type": "color" },
+      "900": { "$value": "#581c87", "$type": "color" },
+      "950": { "$value": "#3b0764", "$type": "color" }
+    },
+    "slate": {
+      "50":  { "$value": "#f8fafc", "$type": "color" },
+      "100": { "$value": "#f1f5f9", "$type": "color" },
+      "200": { "$value": "#e2e8f0", "$type": "color" },
+      "300": { "$value": "#cbd5e1", "$type": "color" },
+      "400": { "$value": "#94a3b8", "$type": "color" },
+      "500": { "$value": "#64748b", "$type": "color" },
+      "600": { "$value": "#475569", "$type": "color" },
+      "700": { "$value": "#334155", "$type": "color" },
+      "800": { "$value": "#1e293b", "$type": "color" },
+      "900": { "$value": "#0f172a", "$type": "color" },
+      "950": { "$value": "#020617", "$type": "color" }
+    }
+  },
+
+  "semantic": {
+    "$description": "Tier 2 — Intent-based aliases. Use these in component tokens and utility classes.",
+    "primary": {
+      "light":   { "$value": "{palette.blue.400}", "$type": "color" },
+      "DEFAULT": { "$value": "{palette.blue.600}", "$type": "color" },
+      "dark":    { "$value": "{palette.blue.800}", "$type": "color" },
+      "fg":      { "$value": "#ffffff",            "$type": "color", "$description": "Foreground on primary bg" },
+      "subtle":  { "$value": "{palette.blue.50}",  "$type": "color" },
+      "muted":   { "$value": "{palette.blue.100}", "$type": "color" }
+    },
+    "success": {
+      "light":   { "$value": "{palette.green.400}", "$type": "color" },
+      "DEFAULT": { "$value": "{palette.green.600}", "$type": "color" },
+      "dark":    { "$value": "{palette.green.800}", "$type": "color" },
+      "fg":      { "$value": "#ffffff",             "$type": "color" },
+      "subtle":  { "$value": "{palette.green.50}",  "$type": "color" },
+      "muted":   { "$value": "{palette.green.100}", "$type": "color" }
+    },
+    "warning": {
+      "light":   { "$value": "{palette.yellow.300}", "$type": "color" },
+      "DEFAULT": { "$value": "{palette.yellow.500}", "$type": "color" },
+      "dark":    { "$value": "{palette.yellow.700}", "$type": "color" },
+      "fg":      { "$value": "{palette.yellow.950}", "$type": "color" },
+      "subtle":  { "$value": "{palette.yellow.50}",  "$type": "color" },
+      "muted":   { "$value": "{palette.yellow.100}", "$type": "color" }
+    },
+    "error": {
+      "light":   { "$value": "{palette.red.400}", "$type": "color" },
+      "DEFAULT": { "$value": "{palette.red.600}", "$type": "color" },
+      "dark":    { "$value": "{palette.red.800}", "$type": "color" },
+      "fg":      { "$value": "#ffffff",           "$type": "color" },
+      "subtle":  { "$value": "{palette.red.50}",  "$type": "color" },
+      "muted":   { "$value": "{palette.red.100}", "$type": "color" }
+    },
+    "neutral": {
+      "50":  { "$value": "{palette.slate.50}",  "$type": "color" },
+      "100": { "$value": "{palette.slate.100}", "$type": "color" },
+      "200": { "$value": "{palette.slate.200}", "$type": "color" },
+      "300": { "$value": "{palette.slate.300}", "$type": "color" },
+      "400": { "$value": "{palette.slate.400}", "$type": "color" },
+      "500": { "$value": "{palette.slate.500}", "$type": "color" },
+      "600": { "$value": "{palette.slate.600}", "$type": "color" },
+      "700": { "$value": "{palette.slate.700}", "$type": "color" },
+      "800": { "$value": "{palette.slate.800}", "$type": "color" },
+      "900": { "$value": "{palette.slate.900}", "$type": "color" }
+    },
+    "surface": {
+      "DEFAULT": { "$value": "#ffffff",              "$type": "color" },
+      "subtle":  { "$value": "{palette.slate.50}",   "$type": "color" },
+      "raised":  { "$value": "#ffffff",              "$type": "color" },
+      "overlay": { "$value": "#ffffff",              "$type": "color" }
+    },
+    "text": {
+      "primary":   { "$value": "{palette.slate.900}", "$type": "color" },
+      "secondary":  { "$value": "{palette.slate.600}", "$type": "color" },
+      "tertiary":  { "$value": "{palette.slate.400}", "$type": "color" },
+      "disabled":  { "$value": "{palette.slate.300}", "$type": "color" },
+      "inverse":   { "$value": "#ffffff",             "$type": "color" },
+      "onPrimary": { "$value": "#ffffff",             "$type": "color" }
+    },
+    "border": {
+      "DEFAULT": { "$value": "{palette.slate.200}", "$type": "color" },
+      "subtle":  { "$value": "{palette.slate.100}", "$type": "color" },
+      "strong":  { "$value": "{palette.slate.400}", "$type": "color" },
+      "focus":   { "$value": "{palette.blue.500}",  "$type": "color" }
+    }
+  },
+
+  "component": {
+    "$description": "Tier 3 — Component-scoped tokens. Reference semantic tokens, not palette.",
+    "button": {
+      "primary": {
+        "bg":         { "$value": "{semantic.primary.DEFAULT}", "$type": "color" },
+        "bgHover":    { "$value": "{semantic.primary.dark}",    "$type": "color" },
+        "text":       { "$value": "{semantic.primary.fg}",      "$type": "color" },
+        "border":     { "$value": "{semantic.primary.DEFAULT}", "$type": "color" }
+      },
+      "secondary": {
+        "bg":         { "$value": "transparent",               "$type": "color" },
+        "bgHover":    { "$value": "{semantic.neutral.100}",    "$type": "color" },
+        "text":       { "$value": "{semantic.primary.DEFAULT}","$type": "color" },
+        "border":     { "$value": "{semantic.primary.DEFAULT}","$type": "color" }
+      },
+      "ghost": {
+        "bg":         { "$value": "transparent",             "$type": "color" },
+        "bgHover":    { "$value": "{semantic.neutral.100}",  "$type": "color" },
+        "text":       { "$value": "{semantic.text.primary}", "$type": "color" },
+        "border":     { "$value": "transparent",             "$type": "color" }
+      },
+      "destructive": {
+        "bg":         { "$value": "{semantic.error.DEFAULT}", "$type": "color" },
+        "bgHover":    { "$value": "{semantic.error.dark}",    "$type": "color" },
+        "text":       { "$value": "{semantic.error.fg}",      "$type": "color" },
+        "border":     { "$value": "{semantic.error.DEFAULT}", "$type": "color" }
+      }
+    },
+    "input": {
+      "bg":          { "$value": "{semantic.surface.DEFAULT}", "$type": "color" },
+      "border":      { "$value": "{semantic.border.DEFAULT}",  "$type": "color" },
+      "borderFocus": { "$value": "{semantic.border.focus}",    "$type": "color" },
+      "borderError": { "$value": "{semantic.error.DEFAULT}",   "$type": "color" },
+      "text":        { "$value": "{semantic.text.primary}",    "$type": "color" },
+      "placeholder": { "$value": "{semantic.text.tertiary}",   "$type": "color" }
+    },
+    "card": {
+      "bg":     { "$value": "{semantic.surface.raised}", "$type": "color" },
+      "border": { "$value": "{semantic.border.DEFAULT}", "$type": "color" }
+    }
+  },
+
+  "dark": {
+    "$description": "Dark mode overrides for semantic tokens",
+    "semantic": {
+      "surface": {
+        "DEFAULT": { "$value": "{palette.slate.900}", "$type": "color" },
+        "subtle":  { "$value": "{palette.slate.950}", "$type": "color" },
+        "raised":  { "$value": "{palette.slate.800}", "$type": "color" },
+        "overlay": { "$value": "{palette.slate.800}", "$type": "color" }
+      },
+      "text": {
+        "primary":   { "$value": "{palette.slate.50}",  "$type": "color" },
+        "secondary":  { "$value": "{palette.slate.300}", "$type": "color" },
+        "tertiary":  { "$value": "{palette.slate.500}", "$type": "color" },
+        "disabled":  { "$value": "{palette.slate.700}", "$type": "color" }
+      },
+      "border": {
+        "DEFAULT": { "$value": "{palette.slate.700}", "$type": "color" },
+        "subtle":  { "$value": "{palette.slate.800}", "$type": "color" },
+        "strong":  { "$value": "{palette.slate.500}", "$type": "color" }
+      }
+    }
+  }
+}

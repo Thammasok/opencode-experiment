@@ -1,0 +1,84 @@
+{
+  "$comment": "Design system configuration. Edit this file to set your project theme and active tokens. The LLM reads this to generate consistent, on-brand code.",
+
+  "theme": {
+    "name": "my-app",
+    "mode": "light",
+    "primaryColor": "blue",
+    "accentColor": "purple",
+    "neutralColor": "slate",
+    "errorColor": "red",
+    "warningColor": "yellow",
+    "successColor": "green",
+    "infoColor": "blue",
+
+    "radius": "md",
+    "density": "comfortable",
+
+    "fontFamilySans": "Inter",
+    "fontFamilySerif": "Georgia",
+    "fontFamilyMono": "JetBrains Mono",
+    "typeScale": "majorThird"
+  },
+
+  "tokenOverrides": {
+    "$comment": "Override any token value here. Keys are dot-notation paths into tokens/*.json (e.g. 'semantic.primary.DEFAULT').",
+    "examples": {
+      "semantic.primary.DEFAULT": "#2563eb",
+      "semantic.radius.button": "9999px",
+      "semantic.spacing.componentPaddingMd": "12px"
+    }
+  },
+
+  "components": {
+    "button": {
+      "defaultVariant": "solid",
+      "defaultSize": "md",
+      "rounded": false,
+      "fullWidthOnMobile": true
+    },
+    "input": {
+      "defaultVariant": "outline",
+      "defaultSize": "md",
+      "floatingLabel": false
+    },
+    "card": {
+      "defaultShadow": "sm",
+      "defaultRadius": "md",
+      "defaultPadding": "lg"
+    },
+    "modal": {
+      "closeOnBackdrop": true,
+      "defaultSize": "md"
+    },
+    "toast": {
+      "position": "bottom-right",
+      "duration": 4000
+    }
+  },
+
+  "framework": {
+    "name": "react-tailwind",
+    "tailwindVersion": "4",
+    "reactVersion": "19",
+    "typescript": true,
+    "cssVariables": true,
+    "componentVariants": "cva",
+    "iconLibrary": "lucide-react",
+    "animationLibrary": "motion"
+  },
+
+  "accessibility": {
+    "wcagLevel": "AA",
+    "focusRing": true,
+    "reduceMotion": true,
+    "forcedColors": false,
+    "minimumContrastRatio": 4.5
+  },
+
+  "darkMode": {
+    "enabled": true,
+    "strategy": "class",
+    "defaultMode": "system"
+  }
+}
