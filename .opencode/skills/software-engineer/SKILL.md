@@ -9,9 +9,24 @@ description: >
   architecture diagrams, bugs, errors, performance issues, refactoring, PR reviews, unit/integration/
   contract/e2e tests, microservices, or asks to write/explain/fix any code.
   Adapt response detail to context: brief and direct for quick questions, thorough with best practices for complex topics.
-metadata:
-  author: Thammasok
-  version: 1.0.0
+  For UI/frontend work: read design-system/design-system.config.json first to load active theme,
+  then reference tokens/, components/, accessibility/, and frameworks/ directories.
+---
+
+## Design System Integration
+
+When writing UI code, **always** read the design system config first (located in the `ux-ui-designer` skill):
+
+```
+../.opencode/skills/ux-ui-designer/design-system/design-system.config.json   ← active theme, framework, tokens
+../.opencode/skills/ux-ui-designer/design-system/tokens/                     ← colors, typography, spacing, shadows, borders, breakpoints
+../.opencode/skills/ux-ui-designer/design-system/components/                 ← atoms, molecules, organisms, templates specs
+../.opencode/skills/ux-ui-designer/design-system/accessibility/              ← WCAG checklist, ARIA patterns
+../.opencode/skills/ux-ui-designer/design-system/frameworks/                 ← react-tailwind, nextjs, swiftui patterns
+```
+
+**Token usage rule:** Use `semantic.*` tokens in component code. Never reference `palette.*` directly.
+
 ---
 
 > **Artifact Reference:** Refer to [`.opencode/artifacts/ARTIFACTS.md`](../../artifacts/ARTIFACTS.md) for artifact templates and storage locations when working with project documentation.

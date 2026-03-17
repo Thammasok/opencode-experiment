@@ -1,0 +1,188 @@
+{
+  "$schema": "https://tr.designtokens.org/format/",
+  "$description": "Typography system. Major Third scale (×1.25 ratio), 3 font families, 14 composite text styles.",
+
+  "fontFamily": {
+    "sans":  { "$value": "Inter, ui-sans-serif, system-ui, sans-serif",         "$type": "fontFamily" },
+    "serif": { "$value": "Georgia, ui-serif, serif",                            "$type": "fontFamily" },
+    "mono":  { "$value": "'JetBrains Mono', ui-monospace, 'Courier New', mono", "$type": "fontFamily" }
+  },
+
+  "fontSize": {
+    "$description": "Major Third scale (base 16px, ratio 1.25). Values in rem.",
+    "xs":   { "$value": "0.64rem",   "$type": "dimension", "$px": "10.24px" },
+    "sm":   { "$value": "0.8rem",    "$type": "dimension", "$px": "12.8px"  },
+    "base": { "$value": "1rem",      "$type": "dimension", "$px": "16px"    },
+    "lg":   { "$value": "1.25rem",   "$type": "dimension", "$px": "20px"    },
+    "xl":   { "$value": "1.563rem",  "$type": "dimension", "$px": "25px"    },
+    "2xl":  { "$value": "1.953rem",  "$type": "dimension", "$px": "31.25px" },
+    "3xl":  { "$value": "2.441rem",  "$type": "dimension", "$px": "39.06px" },
+    "4xl":  { "$value": "3.052rem",  "$type": "dimension", "$px": "48.83px" },
+    "5xl":  { "$value": "3.815rem",  "$type": "dimension", "$px": "61.04px" },
+    "6xl":  { "$value": "4.768rem",  "$type": "dimension", "$px": "76.29px" },
+    "7xl":  { "$value": "5.96rem",   "$type": "dimension", "$px": "95.37px" },
+    "8xl":  { "$value": "7.451rem",  "$type": "dimension", "$px": "119.2px" },
+    "9xl":  { "$value": "9.313rem",  "$type": "dimension", "$px": "149px"   }
+  },
+
+  "fontWeight": {
+    "thin":       { "$value": "100", "$type": "fontWeight" },
+    "extralight": { "$value": "200", "$type": "fontWeight" },
+    "light":      { "$value": "300", "$type": "fontWeight" },
+    "normal":     { "$value": "400", "$type": "fontWeight" },
+    "medium":     { "$value": "500", "$type": "fontWeight" },
+    "semibold":   { "$value": "600", "$type": "fontWeight" },
+    "bold":       { "$value": "700", "$type": "fontWeight" },
+    "extrabold":  { "$value": "800", "$type": "fontWeight" },
+    "black":      { "$value": "900", "$type": "fontWeight" }
+  },
+
+  "lineHeight": {
+    "none":     { "$value": "1",    "$type": "number" },
+    "tight":    { "$value": "1.25", "$type": "number" },
+    "snug":     { "$value": "1.375","$type": "number" },
+    "normal":   { "$value": "1.5",  "$type": "number" },
+    "relaxed":  { "$value": "1.625","$type": "number" },
+    "loose":    { "$value": "2",    "$type": "number" }
+  },
+
+  "letterSpacing": {
+    "tighter": { "$value": "-0.05em",  "$type": "dimension" },
+    "tight":   { "$value": "-0.025em", "$type": "dimension" },
+    "normal":  { "$value": "0em",      "$type": "dimension" },
+    "wide":    { "$value": "0.025em",  "$type": "dimension" },
+    "wider":   { "$value": "0.05em",   "$type": "dimension" },
+    "widest":  { "$value": "0.1em",    "$type": "dimension" }
+  },
+
+  "textStyles": {
+    "$description": "14 composite text styles. Each bundles font-size, line-height, font-weight, and letter-spacing.",
+
+    "display2xl": {
+      "$value": {
+        "fontSize": "{fontSize.9xl}",
+        "lineHeight": "{lineHeight.tight}",
+        "fontWeight": "{fontWeight.bold}",
+        "letterSpacing": "{letterSpacing.tight}"
+      },
+      "$type": "typography"
+    },
+    "displayXl": {
+      "$value": {
+        "fontSize": "{fontSize.8xl}",
+        "lineHeight": "{lineHeight.tight}",
+        "fontWeight": "{fontWeight.bold}",
+        "letterSpacing": "{letterSpacing.tight}"
+      },
+      "$type": "typography"
+    },
+    "displayLg": {
+      "$value": {
+        "fontSize": "{fontSize.7xl}",
+        "lineHeight": "{lineHeight.tight}",
+        "fontWeight": "{fontWeight.semibold}",
+        "letterSpacing": "{letterSpacing.tight}"
+      },
+      "$type": "typography"
+    },
+    "displayMd": {
+      "$value": {
+        "fontSize": "{fontSize.6xl}",
+        "lineHeight": "{lineHeight.tight}",
+        "fontWeight": "{fontWeight.semibold}",
+        "letterSpacing": "{letterSpacing.tight}"
+      },
+      "$type": "typography"
+    },
+    "displaySm": {
+      "$value": {
+        "fontSize": "{fontSize.5xl}",
+        "lineHeight": "{lineHeight.snug}",
+        "fontWeight": "{fontWeight.semibold}",
+        "letterSpacing": "{letterSpacing.normal}"
+      },
+      "$type": "typography"
+    },
+    "textXl": {
+      "$value": {
+        "fontSize": "{fontSize.xl}",
+        "lineHeight": "{lineHeight.relaxed}",
+        "fontWeight": "{fontWeight.normal}",
+        "letterSpacing": "{letterSpacing.normal}"
+      },
+      "$type": "typography"
+    },
+    "textLg": {
+      "$value": {
+        "fontSize": "{fontSize.lg}",
+        "lineHeight": "{lineHeight.relaxed}",
+        "fontWeight": "{fontWeight.normal}",
+        "letterSpacing": "{letterSpacing.normal}"
+      },
+      "$type": "typography"
+    },
+    "textMd": {
+      "$value": {
+        "fontSize": "{fontSize.base}",
+        "lineHeight": "{lineHeight.normal}",
+        "fontWeight": "{fontWeight.normal}",
+        "letterSpacing": "{letterSpacing.normal}"
+      },
+      "$type": "typography"
+    },
+    "textSm": {
+      "$value": {
+        "fontSize": "{fontSize.sm}",
+        "lineHeight": "{lineHeight.normal}",
+        "fontWeight": "{fontWeight.normal}",
+        "letterSpacing": "{letterSpacing.normal}"
+      },
+      "$type": "typography"
+    },
+    "textXs": {
+      "$value": {
+        "fontSize": "{fontSize.xs}",
+        "lineHeight": "{lineHeight.normal}",
+        "fontWeight": "{fontWeight.normal}",
+        "letterSpacing": "{letterSpacing.wide}"
+      },
+      "$type": "typography"
+    },
+    "labelXl": {
+      "$value": {
+        "fontSize": "{fontSize.lg}",
+        "lineHeight": "{lineHeight.snug}",
+        "fontWeight": "{fontWeight.medium}",
+        "letterSpacing": "{letterSpacing.normal}"
+      },
+      "$type": "typography"
+    },
+    "labelLg": {
+      "$value": {
+        "fontSize": "{fontSize.base}",
+        "lineHeight": "{lineHeight.snug}",
+        "fontWeight": "{fontWeight.medium}",
+        "letterSpacing": "{letterSpacing.normal}"
+      },
+      "$type": "typography"
+    },
+    "labelMd": {
+      "$value": {
+        "fontSize": "{fontSize.sm}",
+        "lineHeight": "{lineHeight.snug}",
+        "fontWeight": "{fontWeight.medium}",
+        "letterSpacing": "{letterSpacing.normal}"
+      },
+      "$type": "typography"
+    },
+    "labelSm": {
+      "$value": {
+        "fontSize": "{fontSize.xs}",
+        "lineHeight": "{lineHeight.snug}",
+        "fontWeight": "{fontWeight.medium}",
+        "letterSpacing": "{letterSpacing.wider}"
+      },
+      "$type": "typography"
+    }
+  }
+}
