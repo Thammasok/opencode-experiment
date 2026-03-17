@@ -1,0 +1,123 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id           String    @id @default(uuid())
+  email        String    @unique
+  username     String    @unique
+  displayName  String
+  password     String
+  avatar       String?
+  bio          String?
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+
+  posts        Post[]
+  comments     Comment[]
+  likes        Like[]
+  followedBy   Follow[]  @relation("following")
+  following    Follow[]  @relation("follower")
+}
+
+model Post {
+  id        String    @id @default(uuid())
+  content   String
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  userId    String
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  comments  Comment[]
+  likes     Like[]
+  hashtags  PostHashtag[]
+  mentions  PostMention[]
+
+  @@index([userId])
+  @@index([createdAt])
+}
+
+model Comment {
+  id        String    @id @default(uuid())
+  content   String
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  postId    String
+  post      Post      @relation(fields: [postId], references: [id], onDelete: Cascade)
+  userId    String
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  likes     CommentLike[]
+
+  @@index([postId])
+  @@index([userId])
+}
+
+model Like {
+  id        String    @id @default(uuid())
+  createdAt DateTime  @default(now())
+  postId    String
+  post      Post      @relation(fields: [postId], references: [id], onDelete: Cascade)
+  userId    String
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([postId, userId])
+  @@index([postId])
+  @@index([userId])
+}
+
+model CommentLike {
+  id        String    @id @default(uuid())
+  createdAt DateTime  @default(now())
+  commentId String
+  comment   Comment   @relation(fields: [commentId], references: [id], onDelete: Cascade)
+  userId    String
+
+  @@unique([commentId, userId])
+}
+
+model Follow {
+  id          String    @id @default(uuid())
+  createdAt   DateTime  @default(now())
+  followerId  String
+  follower    User      @relation("follower", fields: [followerId], references: [id], onDelete: Cascade)
+  followingId String
+  following   User      @relation("following", fields: [followingId], references: [id], onDelete: Cascade)
+
+  @@unique([followerId, followingId])
+  @@index([followerId])
+  @@index([followingId])
+}
+
+model Hashtag {
+  id        String       @id @default(uuid())
+  name      String       @unique
+  posts     PostHashtag[]
+
+  @@index([name])
+}
+
+model PostHashtag {
+  id        String   @id @default(uuid())
+  postId    String
+  post      Post     @relation(fields: [postId], references: [id], onDelete: Cascade)
+  hashtagId String
+  hashtag   Hashtag  @relation(fields: [hashtagId], references: [id], onDelete: Cascade)
+
+  @@unique([postId, hashtagId])
+}
+
+model PostMention {
+  id        String   @id @default(uuid())
+  postId    String
+  post      Post     @relation(fields: [postId], references: [id], onDelete: Cascade)
+  userId    String
+
+  @@index([postId])
+  @@index([userId])
+}
