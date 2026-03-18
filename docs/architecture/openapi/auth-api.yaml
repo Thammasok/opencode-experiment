@@ -1,0 +1,550 @@
+openapi: 3.0.3
+
+info:
+  title: MicroBlog Auth API
+  description: |
+    Authentication endpoints for the MicroBlog platform.
+
+    **Iteration 1 scope:** Register · Sign In · Sign Out · Refresh · Me
+
+    **Scenarios covered:** SC-AUTH-001 through SC-AUTH-016
+    **Test Cases:** TC-AUTH-001 through TC-AUTH-011
+
+    ## Authentication Flow
+
+    ```
+    POST /auth/register  →  201 { accessToken, refreshToken }
+    POST /auth/signin    →  200 { accessToken, refreshToken }
+    GET  /auth/me        →  200 { userId, username, email }   (Bearer token)
+    POST /auth/refresh   →  200 { accessToken, refreshToken } (rotates)
+    POST /auth/signout   →  200                               (denylists JWT)
+    ```
+
+    ## Token Strategy
+    - **Access token:** JWT HS256, 1-hour TTL. Pass as `Authorization: Bearer {token}`.
+    - **Refresh token:** Opaque 32-byte random, 30-day TTL. Rotated on each refresh call.
+    - **Sign-out:** JWT JTI added to Redis denylist; token immediately invalid.
+  version: 1.0.0
+
+servers:
+  - url: http://localhost:3000/api
+    description: Local development
+  - url: https://staging.microblog.example.com/api
+    description: Staging
+
+tags:
+  - name: auth
+    description: Registration, authentication, and session management
+
+paths:
+
+  /auth/register:
+    post:
+      tags: [auth]
+      summary: Register a new member account
+      description: |
+        Creates a new member account and returns JWT access + refresh tokens.
+
+        **Scenario:** SC-AUTH-001 through SC-AUTH-010
+        **Test Cases:** TC-AUTH-001, TC-AUTH-002, TC-AUTH-003, TC-AUTH-004, TC-AUTH-005, TC-AUTH-006, TC-AUTH-007
+
+        **Rate limit:** 10 requests per IP per minute.
+
+        **Security:** Password is hashed with bcrypt cost 12 and never returned in any response.
+      operationId: registerMember
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RegisterRequest'
+            examples:
+              valid:
+                summary: Valid registration
+                value:
+                  username: "alice_dev"
+                  email: "alice@example.com"
+                  password: "P@ssw0rd!"
+              username_too_short:
+                summary: Username below minimum (2 chars) → 400
+                value:
+                  username: "ab"
+                  email: "alice@example.com"
+                  password: "P@ssw0rd!"
+              duplicate_email:
+                summary: Duplicate email → 409
+                value:
+                  username: "newuser1"
+                  email: "existing@example.com"
+                  password: "P@ssw0rd!"
+      responses:
+        '201':
+          description: Account created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthResponse'
+              example:
+                userId: "a1b2c3d4-e5f6-7890-abcd-ef1234567890"
+                username: "alice_dev"
+                email: "alice@example.com"
+                displayName: "alice_dev"
+                createdAt: "2026-03-17T10:30:00Z"
+                accessToken: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJhMWIyYzNkNC0uLi4ifQ.sig"
+                refreshToken: "dGhpcyBpcyBhIHNlY3VyZSByYW5kb20gdG9rZW4"
+        '400':
+          description: Validation error — one or more fields failed validation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ValidationError'
+              examples:
+                username_min_length:
+                  summary: TC-AUTH-002 — username below min (2 chars)
+                  value:
+                    code: "VALIDATION_ERROR"
+                    message: "One or more fields are invalid."
+                    errors:
+                      - field: "username"
+                        code: "MIN_LENGTH"
+                        message: "Username must be at least 3 characters."
+                username_max_length:
+                  summary: TC-AUTH-004 — username above max (31 chars)
+                  value:
+                    code: "VALIDATION_ERROR"
+                    message: "One or more fields are invalid."
+                    errors:
+                      - field: "username"
+                        code: "MAX_LENGTH"
+                        message: "Username must be no longer than 30 characters."
+                username_invalid_format:
+                  summary: TC-AUTH-005 — uppercase chars in username
+                  value:
+                    code: "VALIDATION_ERROR"
+                    message: "One or more fields are invalid."
+                    errors:
+                      - field: "username"
+                        code: "INVALID_FORMAT"
+                        message: "Username may only contain lowercase letters, digits, and underscores."
+                password_invalid_format:
+                  summary: TC-AUTH-007 — password missing uppercase
+                  value:
+                    code: "VALIDATION_ERROR"
+                    message: "One or more fields are invalid."
+                    errors:
+                      - field: "password"
+                        code: "INVALID_FORMAT"
+                        message: "Password must contain at least 1 uppercase letter, 1 digit, and 1 special character."
+        '409':
+          description: Conflict — email or username already taken
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              examples:
+                email_exists:
+                  summary: TC-AUTH-006 — duplicate email
+                  value:
+                    code: "EMAIL_ALREADY_EXISTS"
+                    message: "An account with this email address already exists."
+                username_taken:
+                  summary: Duplicate username
+                  value:
+                    code: "USERNAME_TAKEN"
+                    message: "This username is not available."
+        '429':
+          $ref: '#/components/responses/RateLimitExceeded'
+        '500':
+          $ref: '#/components/responses/InternalError'
+
+  /auth/signin:
+    post:
+      tags: [auth]
+      summary: Sign in with email and password
+      description: |
+        Authenticates a member and returns JWT tokens.
+
+        **Scenario:** SC-AUTH-011 through SC-AUTH-014
+        **Test Cases:** TC-AUTH-008, TC-AUTH-009, TC-AUTH-010
+
+        **Security:**
+        - Returns identical 401 error for wrong password AND non-existent email (no enumeration)
+        - Account locked for 15 minutes after 5 consecutive failures
+        - Rate limit: 10 requests per IP per minute
+
+        **Lockout:** When locked, returns 429 with `retryAfterSeconds` indicating wait time.
+      operationId: signIn
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SignInRequest'
+            examples:
+              valid:
+                summary: TC-AUTH-008 — valid credentials
+                value:
+                  email: "alice@example.com"
+                  password: "P@ssw0rd!"
+              wrong_password:
+                summary: TC-AUTH-009 — wrong password
+                value:
+                  email: "alice@example.com"
+                  password: "WrongPass1!"
+      responses:
+        '200':
+          description: Sign-in successful
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SignInResponse'
+              example:
+                userId: "a1b2c3d4-e5f6-7890-abcd-ef1234567890"
+                username: "alice_dev"
+                accessToken: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+                refreshToken: "dGhpcyBpcyBhIHNlY3VyZSByYW5kb20gdG9rZW4"
+        '400':
+          description: Missing required field
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ValidationError'
+        '401':
+          description: Invalid credentials — identical message for wrong password and unknown email
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                code: "UNAUTHENTICATED"
+                message: "Invalid email or password."
+        '429':
+          description: Account locked or IP rate limit exceeded
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RateLimitError'
+              example:
+                code: "RATE_LIMIT_EXCEEDED"
+                message: "Account temporarily locked. Try again in 14 minutes."
+                retryAfterSeconds: 840
+        '500':
+          $ref: '#/components/responses/InternalError'
+
+  /auth/signout:
+    post:
+      tags: [auth]
+      summary: Sign out — invalidate current session
+      description: |
+        Invalidates the current access token by adding its JTI to the Redis denylist.
+
+        **Scenario:** SC-AUTH-015
+        **Test Case:** TC-AUTH-011
+
+        After this call, the same access token will return 401 on any protected endpoint.
+      operationId: signOut
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Signed out successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Signed out successfully."
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '500':
+          $ref: '#/components/responses/InternalError'
+
+  /auth/me:
+    get:
+      tags: [auth]
+      summary: Get current authenticated member
+      description: |
+        Returns the profile of the currently authenticated member.
+        Used by the frontend on page load to rehydrate session state.
+
+        **Scenario:** SC-AUTH-016
+      operationId: getMe
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Current member profile
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MeResponse'
+              example:
+                userId: "a1b2c3d4-e5f6-7890-abcd-ef1234567890"
+                username: "alice_dev"
+                displayName: "alice_dev"
+                email: "alice@example.com"
+                avatarUrl: null
+                createdAt: "2026-03-17T10:30:00Z"
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+  /auth/refresh:
+    post:
+      tags: [auth]
+      summary: Refresh access token using refresh token
+      description: |
+        Exchanges a valid refresh token for a new access token + new refresh token.
+        The old refresh token is invalidated (rotation).
+      operationId: refreshToken
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RefreshRequest'
+      responses:
+        '200':
+          description: New token pair issued
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RefreshResponse'
+        '401':
+          description: Refresh token invalid, expired, or revoked
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                code: "UNAUTHENTICATED"
+                message: "Refresh token is invalid or has expired."
+        '500':
+          $ref: '#/components/responses/InternalError'
+
+components:
+
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: |
+        JWT access token returned from /auth/register or /auth/signin.
+        Include as: `Authorization: Bearer {token}`
+
+  schemas:
+
+    RegisterRequest:
+      type: object
+      required: [username, email, password]
+      properties:
+        username:
+          type: string
+          minLength: 3
+          maxLength: 30
+          pattern: '^[a-z0-9_]+$'
+          description: Unique username — lowercase alphanumeric + underscore only
+          example: "alice_dev"
+        email:
+          type: string
+          format: email
+          maxLength: 255
+          description: Valid email address — must be unique
+          example: "alice@example.com"
+        password:
+          type: string
+          minLength: 8
+          maxLength: 64
+          description: |
+            Password requirements:
+            - Minimum 8 characters, maximum 64
+            - At least 1 uppercase letter
+            - At least 1 digit
+            - At least 1 special character (!@#$%^&*...)
+          example: "P@ssw0rd!"
+
+    SignInRequest:
+      type: object
+      required: [email, password]
+      properties:
+        email:
+          type: string
+          format: email
+          example: "alice@example.com"
+        password:
+          type: string
+          minLength: 1
+          example: "P@ssw0rd!"
+
+    RefreshRequest:
+      type: object
+      required: [refreshToken]
+      properties:
+        refreshToken:
+          type: string
+          description: Opaque refresh token received from register or signin
+          example: "dGhpcyBpcyBhIHNlY3VyZSByYW5kb20gdG9rZW4"
+
+    AuthResponse:
+      type: object
+      properties:
+        userId:
+          type: string
+          format: uuid
+          description: Unique member identifier
+        username:
+          type: string
+          example: "alice_dev"
+        email:
+          type: string
+          format: email
+          example: "alice@example.com"
+        displayName:
+          type: string
+          example: "alice_dev"
+        createdAt:
+          type: string
+          format: date-time
+          description: ISO 8601 UTC timestamp
+        accessToken:
+          type: string
+          description: JWT access token — expires in 1 hour
+        refreshToken:
+          type: string
+          description: Opaque refresh token — expires in 30 days
+
+    SignInResponse:
+      type: object
+      properties:
+        userId:
+          type: string
+          format: uuid
+        username:
+          type: string
+        accessToken:
+          type: string
+          description: JWT access token — expires in 1 hour
+        refreshToken:
+          type: string
+          description: Opaque refresh token — expires in 30 days
+
+    RefreshResponse:
+      type: object
+      properties:
+        accessToken:
+          type: string
+          description: New JWT access token
+        refreshToken:
+          type: string
+          description: New opaque refresh token (old one is revoked)
+
+    MeResponse:
+      type: object
+      properties:
+        userId:
+          type: string
+          format: uuid
+        username:
+          type: string
+        displayName:
+          type: string
+        email:
+          type: string
+          format: email
+        avatarUrl:
+          type: string
+          nullable: true
+          description: CDN URL of avatar image, or null if not set
+        createdAt:
+          type: string
+          format: date-time
+
+    ValidationError:
+      type: object
+      required: [code, message, errors]
+      properties:
+        code:
+          type: string
+          enum: [VALIDATION_ERROR]
+        message:
+          type: string
+          example: "One or more fields are invalid."
+        errors:
+          type: array
+          items:
+            $ref: '#/components/schemas/FieldError'
+
+    FieldError:
+      type: object
+      required: [field, code, message]
+      properties:
+        field:
+          type: string
+          description: Name of the field that failed validation
+          example: "username"
+        code:
+          type: string
+          enum: [REQUIRED, MIN_LENGTH, MAX_LENGTH, INVALID_FORMAT]
+          example: "MIN_LENGTH"
+        message:
+          type: string
+          example: "Username must be at least 3 characters."
+
+    RateLimitError:
+      type: object
+      required: [code, message]
+      properties:
+        code:
+          type: string
+          enum: [RATE_LIMIT_EXCEEDED]
+        message:
+          type: string
+          example: "Account temporarily locked. Try again in 14 minutes."
+        retryAfterSeconds:
+          type: integer
+          description: Seconds until the rate limit resets or account unlocks
+          example: 840
+
+    Error:
+      type: object
+      required: [code, message]
+      properties:
+        code:
+          type: string
+          description: Machine-readable error code
+          example: "UNAUTHENTICATED"
+        message:
+          type: string
+          description: Human-readable error description
+          example: "Invalid email or password."
+
+  responses:
+
+    Unauthorized:
+      description: Missing, invalid, expired, or denylisted access token
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            code: "UNAUTHENTICATED"
+            message: "Authentication required."
+
+    RateLimitExceeded:
+      description: Too many requests — IP rate limit or account lockout
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/RateLimitError'
+
+    InternalError:
+      description: Unexpected server error
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            code: "INTERNAL_ERROR"
+            message: "An unexpected error occurred. Please try again."
