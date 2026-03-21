@@ -37,9 +37,31 @@ Step 5: Write FR and NFR
 
 ---
 
+<!-- ## Interactive Protocol — MANDATORY
+
+This skill runs **one step at a time**. After each step you MUST stop, present your output, and explicitly ask the user to confirm before moving to the next step.
+
+**Gate pattern (repeat at every step boundary):**
+
+```
+> Step [N] complete.
+> - [Brief summary of what was produced]
+> Ready to move to Step [N+1] — [Step name]?
+> Reply **yes** to continue, or give feedback to revise this step first.
+```
+
+**Rules:**
+- Never auto-advance. Always pause and wait for user confirmation.
+- If the user gives feedback, revise the current step output and re-present it before asking again.
+- Only write the final document (Output Document) after the user confirms Step 5.
+
+--- -->
+
 ## Step 1 — Requirement Elicitation
 
-Before writing anything, ask questions to surface what is known and what is missing. Use the following checklist as a guide — not every question applies to every feature.
+Ask the questions below to surface what is known and what is missing. Group them into a short, readable list — do not dump every question at once. Prioritise the most critical unknowns first.
+
+**After sending the questions: STOP. Wait for the user's answers before proceeding.**
 
 ### Elicitation Checklist
 
@@ -87,6 +109,10 @@ Before writing anything, ask questions to surface what is known and what is miss
 - Are there response time expectations?
 - Are there volume or concurrency expectations?
 - Are there compliance or security requirements? (PII, encryption, audit logs)
+
+> **GATE — Step 1:** Present your questions grouped by theme. **STOP. Wait for the user's answers.**
+> Once the user responds, summarise the requirements you've captured, flag any gaps still open, then ask:
+> _"Ready to move to Step 2 — User Story Map? Reply yes to continue, or clarify any answers first."_
 
 ---
 
@@ -228,6 +254,9 @@ Business Conditions:
 Priority: Must Have
 ```
 
+> **GATE — Step 2:** Present the full User Story Map. **STOP. Wait for confirmation.**
+> _"Ready to move to Step 3 — Swimlane Diagram? Reply yes to continue, or give feedback to revise."_
+
 ---
 
 ## Step 3 — Swimlane Diagram (Mermaid)
@@ -322,6 +351,9 @@ flowchart TD
     N --> P([Redirect to dashboard])
 ```
 
+> **GATE — Step 3:** Present the Mermaid diagram. **STOP. Wait for confirmation.**
+> _"Ready to move to Step 4 — Input/Output Field Specification? Reply yes to continue, or give feedback to revise."_
+
 ---
 
 ## Step 4 — Input / Output Field Specification
@@ -373,6 +405,9 @@ For every action in the system, specify all input and output fields precisely. T
 | 400         | `DOMAIN_NOT_ALLOWED`   | Email domain is not on the approved whitelist   |
 | 409         | `EMAIL_ALREADY_EXISTS` | An account with this email already exists       |
 | 500         | `INTERNAL_ERROR`       | Unexpected server error                         |
+
+> **GATE — Step 4:** Present the input/output tables and error code registry. **STOP. Wait for confirmation.**
+> _"Ready to move to Step 5 — Functional & Non-Functional Requirements? Reply yes to continue, or give feedback to revise."_
 
 ---
 
@@ -486,11 +521,14 @@ NFR-MAINT-001: The approved email domain whitelist shall be configurable via env
                variable without requiring a code deployment.
 ```
 
+> **GATE — Step 5:** Present the FR and NFR lists. **STOP. Wait for confirmation.**
+> _"All steps complete. Ready to assemble the final requirements document? Reply yes to generate it, or give feedback to revise any section."_
+
 ---
 
 ## Output Document Template
 
-Use this structure to produce the final requirements document for a feature:
+Use this structure to produce the final requirements document for a feature. **Only generate this after the user confirms Step 5.**
 
 ```markdown
 # Requirements — [Feature Name]
