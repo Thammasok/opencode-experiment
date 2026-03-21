@@ -27,6 +27,8 @@ This repository contains skill definitions (markdown files) rather than executab
 │   └── ARTIFACTS.md    # Artifact storage structure, IDs, templates
 ├── package.json
 └── bun.lock
+
+NOT_USED/               # Deprecated/archived files — do not reference
 ```
 
 ---

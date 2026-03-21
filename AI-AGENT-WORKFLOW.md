@@ -25,7 +25,6 @@ flowchart LR
     HR_UX["Human Review\nHR-UX"]
     HR_PM["Human Review\nHR-PM"]
     HR_ARCH["Human Review\nHR-ARCH"]
-    HR_ORC["Human Review\nHR-ORC"]
     HR_TW["Human Review\nHR-TW"]
 
     PM["Breakdown Scenarios into Iterations (PM)"]
@@ -42,6 +41,8 @@ flowchart LR
         subgraph DEVLOOP["Development Loop"]
             TDD["Write Failing Test (TDD Red)"]
             IMPL["Implement (TDD Green)"]
+            IMPLCHECK{{"Green attempts >= 10?"}}
+            IMPLBLOCK["🚨 Blocked — Escalate to Human"]
             REFAC["Refactor"]
             INT["Integrate"]
             TESTALL["Test All (automated suite)"]
@@ -73,11 +74,12 @@ flowchart LR
     ORC --> ARCH
     APIC --> TDD
     DBS --> TDD
-    TDD --> IMPL --> REFAC --> INT --> TESTALL --> TECHDOC
+    TDD --> IMPL --> IMPLCHECK
+    IMPLCHECK -- "No" --> REFAC --> INT --> TESTALL --> TECHDOC
+    IMPLCHECK -- "Yes" --> IMPLBLOCK
     ARCH --> HR_ARCH
     HR_ARCH --> TDD
-    TECHDOC --> HR_ORC
-    HR_ORC --> UAT
+    TECHDOC --> UAT
     UAT --> HUMAN
     HUMAN --> PASS
 
@@ -90,70 +92,6 @@ flowchart LR
     HR_TW --> RETRO
     RETRO -- "next iteration" --> PM
 ```
-
----
-
-## Step-by-Step Workflow Process
-
-Each phase follows this standard process:
-
-```
-┌─────────────────────────────────────────────────────────────┐
-│ 1. Agent completes artifact                                  │
-└──────────────────────────┬──────────────────────────────────┘
-                           │
-                           ▼
-┌─────────────────────────────────────────────────────────────┐
-│ 2. Ask user: "Add or edit anything?"                        │
-│    (via question tool with "add/edit" and "no thanks"      │
-│     options)                                                │
-└──────────────────────────┬──────────────────────────────────┘
-                           │
-           ┌───────────────┴───────────────┐
-           │                               │
-           ▼ [user wants edit]             ▼ [no edit needed]
-┌──────────────────────────────┐   ┌──────────────────────────┐
-│ 3. Wait for user edits       │   │ 4. Create Human Review   │
-│    • User provides edits     │   │    artifact (HR-xxx)     │
-│    • Agent applies changes   │   │    • Reviewer field       │
-│    • Re-ask: "Add/edit?"    │   │    • Date                │
-└──────────────────────────────┘   │    • Artifacts reviewed  │
-                                   │    • Status: Pending     │
-                                   └───────────┬──────────────┘
-                                               │
-                                               ▼
-                                   ┌──────────────────────────┐
-                                   │ 5. Request approval      │
-                                   │    "Please review and    │
-                                   │    approve to proceed    │
-                                   │    to next step"        │
-                                   └───────────┬──────────────┘
-                                               │
-                               ┌───────────────┼───────────────┐
-                               │               │               │
-                               ▼               ▼               ▼
-                        ┌──────────┐   ┌──────────┐   ┌──────────┐
-                        │Approved  │   │Changes   │   │Rejected  │
-                        │          │   │Requested │   │          │
-                        └────┬─────┘   └────┬─────┘   └────┬─────┘
-                             │              │              │
-                             ▼              ▼              ▼
-                        Move to       Apply fixes     Revisit
-                        next step     + re-review    earlier phase
-```
-
-### Process Details
-
-| Step | Action | Description |
-|------|--------|-------------|
-| 1 | Complete Artifact | Agent finishes creating the required artifact(s) |
-| 2 | Ask User | Prompt: "Add or edit anything?" with options |
-| 3 | Handle Edit | If yes: wait for edits, apply, re-prompt |
-| 4 | Create HR Artifact | Generate `HR-[PHASE]-###` with status "Pending" |
-| 5 | Request Approval | Ask human to review and approve |
-| 6a | If Approved | Update HR status → proceed to next step |
-| 6b | If Changes Requested | Apply fixes → re-create HR → request approval again |
-| 6c | If Rejected | Go back to earlier phase (BA/PM decides) |
 
 ---
 
@@ -346,6 +284,8 @@ Each phase follows this standard process:
 1. **Load Scenario Context** — SC + TC + Architecture
 2. **Write Failing Test (TDD Red)** — Test must fail first
 3. **Implement Minimum Code (TDD Green)** — Just enough to pass
+   - Track consecutive failed Green attempts
+   - **If 10 or more consecutive Green attempts all fail → stop, escalate to human with a summary of what was tried and why it is stuck**
 4. **Refactor** — Clean up without changing behavior
 5. **Integrate** — Ensure changes work with existing code
 6. **Run Full Test Suite** — All tests must pass
@@ -367,6 +307,18 @@ Each phase follows this standard process:
 
    ─────────────────────────────────────────────
                      REPEAT
+
+   ⚠️  GREEN ESCALATION RULE
+   ──────────────────────────
+   If the test still FAILS after ~10 consecutive
+   implementation attempts:
+     → STOP retrying
+     → Compile a summary:
+         • What was tried (approaches, changes)
+         • Why each attempt failed
+         • What is blocking progress
+     → Escalate to Human for guidance
+     → Resume only after human unblocks
 ```
 
 **Outputs:**
@@ -518,7 +470,6 @@ Phase 3: Iteration Execution (repeat per scenario)
 │    • Signal ready for review                                    │
 └─────────────────────────┬───────────────────────────────────────┘
                           │
-                          ▼ HR-ORC (Human Review)
                           │
 Phase 4: Review & UAT
 ────────────────────
@@ -668,7 +619,7 @@ Field Specs ───────┘                     │     Design Sys ─�
                                                         │
                                      ┌──────────────────┘
                                      │
-                                     ▼ HR-ORC
+                                     ▼
                              Human Review / UAT
                                      │
                                      ▼ (on pass)
@@ -693,7 +644,7 @@ Field Specs ───────┘                     │     Design Sys ─�
 | Discovery | ux-ui-designer | US, FR, NFR | UJ, WF, UI, Design System | ✓ HR-UX |
 | Planning | project-management | All above | EPIC, DEV, Iterations, Traceability | ✓ HR-PM |
 | Architecture | software-architecture | SC, TC, DEV | API Contract, DB Schema, ADR, OpenAPI | ✓ HR-ARCH |
-| Development | ai-orchestrator | SC, TC, Architecture | Test Code, Impl Code, Tech Docs | ✓ HR-ORC |
+| Development | ai-orchestrator | SC, TC, Architecture | Test Code, Impl Code, Tech Docs | — |
 | Review | Human | Implementation | Approved / Rejected | — |
 | Documentation | technical-writer | Approved Feature | User Docs | ✓ HR-TW |
 | Retrospect | project-management | Iteration Results | Release Notes | — |
@@ -729,6 +680,7 @@ skill: technical-writer       → Write user documentation
 - GREEN: Write minimum code to pass
 - REFACTOR: Clean up without changing behavior
 - Never write implementation without a failing test
+- **Green Escalation:** If the test still fails after ~10 consecutive implementation attempts, stop and escalate to a human with a full summary of what was tried and what is blocking — do not keep retrying indefinitely
 
 ### 3. Just-Enough Architecture
 - Design only what the current scenario needs

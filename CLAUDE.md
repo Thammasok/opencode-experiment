@@ -61,12 +61,15 @@ All artifact templates, storage locations, and naming conventions are defined in
 
 ## Key Files
 
-- `idea.md` — Workflow diagram and design decisions
 - `AGENTS.md` — Code style guidelines for projects using these skills
 - `.claude/skills/*/SKILL.md` — Individual skill definitions (primary location)
 - `.opencode/skills/*/SKILL.md` — Individual skill definitions (mirror)
 - `.claude/artifacts/ARTIFACTS.md` — Centralized artifact storage, naming conventions, and templates
 - `.opencode/artifacts/ARTIFACTS.md` — Mirror of artifact definitions
+
+## Ignored Directories
+
+- `NOT_USED/` — Archived/deprecated files. Do **not** read, reference, or use anything from this folder.
 
 ## Code Style (for projects using these skills)
 
