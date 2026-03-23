@@ -12,23 +12,27 @@ This repository contains skill definitions (markdown files) rather than executab
 
 ```
 .opencode/
-├── skills/              # Agent skill definitions
-│   ├── software-engineer/
-│   ├── software-tester/
-│   ├── software-tester-automation/
-│   ├── software-tester-design/
-│   ├── software-architecture/
-│   ├── business-analysis/
-│   ├── project-management/
-│   ├── technical-writer/
-│   ├── ai-orchestrator/
-│   └── agent-team-development/
 ├── artifacts/           # Shared artifact templates and conventions
 │   └── ARTIFACTS.md    # Artifact storage structure, IDs, templates
-├── package.json
-└── bun.lock
-
-NOT_USED/               # Deprecated/archived files — do not reference
+├── knowledge/           # Knowledge base for AI context
+├── rules/               # Agent rules and guidelines
+├── skills/              # Agent skill definitions
+│   ├── agent-team-development/
+│   ├── ai-orchestrator/
+│   ├── business-analysis/
+│   ├── find-skills/
+│   ├── mobile-developer-flutter/
+│   ├── project-management/
+│   ├── software-architecture/
+│   ├── software-engineer/
+│   ├── software-tester-automation/
+│   ├── software-tester-design/
+│   ├── software-tester/
+│   ├── technical-writer/
+│   └── ux-ui-designer/
+├── .gitignore
+├── bun.lock
+└── package.json
 ```
 
 ---

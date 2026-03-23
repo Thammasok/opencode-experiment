@@ -1,71 +1,31 @@
-# React 19 + Tailwind v4 + TypeScript + CVA
+# React 19 + Tailwind v4 + shadcn/ui + TypeScript
 
-Implementation patterns for building the design system in the React + Tailwind stack.
+Implementation patterns for SAN.ai. Component library is **shadcn/ui** (new-york style, neutral base). All UI primitives live in `web/components/ui/` — never hand-edit them.
 
 ---
 
-## Project Setup
+## Key Rules
 
-```bash
-# New Next.js project (includes Tailwind v4 + TypeScript)
-npx create-next-app@latest my-app --typescript --tailwind --eslint --app
-
-# Additional dependencies
-npm install class-variance-authority clsx tailwind-merge lucide-react motion
-npm install -D @tailwindcss/typography
+```
+✅ Import components from @/components/ui/
+✅ Import cn() from @/lib/utils
+✅ Import Form from @/components/ui/form (shadcn wrapper)
+✅ Add components via: cd web && pnpm shadcn add <component>
+✅ Alias lucide-react icons with Icon suffix: import { Bell as BellIcon }
+❌ Never import Form from react-hook-form
+❌ Never hand-edit files in components/ui/
+❌ Never import bare lucide icons without the Icon suffix
 ```
 
 ---
 
-## Tailwind v4 CSS Variables Integration
+## Path Alias
 
-In `app/globals.css`, define design tokens as CSS custom properties that Tailwind v4 reads:
-
-```css
-@import "tailwindcss";
-
-@theme {
-  /* Colors — maps to design-system/tokens/colors.json semantic layer */
-  --color-primary: #2563eb;
-  --color-primary-light: #60a5fa;
-  --color-primary-dark: #1e40af;
-  --color-primary-fg: #ffffff;
-
-  --color-success: #16a34a;
-  --color-warning: #eab308;
-  --color-error: #dc2626;
-
-  --color-surface: #ffffff;
-  --color-surface-subtle: #f8fafc;
-  --color-text-primary: #0f172a;
-  --color-text-secondary: #475569;
-  --color-text-tertiary: #94a3b8;
-  --color-border: #e2e8f0;
-
-  /* Typography — maps to tokens/typography.json */
-  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
-  --font-mono: "JetBrains Mono", ui-monospace, monospace;
-
-  /* Radius — driven by design-system.config.json > theme.radius */
-  --radius-sm: 4px;
-  --radius-md: 6px;
-  --radius-lg: 8px;
-  --radius-xl: 12px;
-  --radius-full: 9999px;
-
-  --radius-button: var(--radius-md);
-  --radius-input: var(--radius-md);
-  --radius-card: var(--radius-lg);
-}
-
-/* Dark mode */
-.dark {
-  --color-surface: #0f172a;
-  --color-surface-subtle: #020617;
-  --color-text-primary: #f8fafc;
-  --color-text-secondary: #cbd5e1;
-  --color-border: #334155;
-}
+`@/*` maps to `web/*`:
+```ts
+import { Button } from '@/components/ui/button'
+import { cn } from '@/lib/utils'
+import { useTeamListsStore } from '@/stores/team-list.store'
 ```
 
 ---
@@ -73,223 +33,223 @@ In `app/globals.css`, define design tokens as CSS custom properties that Tailwin
 ## `cn` Utility
 
 ```ts
-// lib/cn.ts
-import { clsx, type ClassValue } from 'clsx'
-import { twMerge } from 'tailwind-merge'
+// @/lib/utils — already exists, do not recreate
+import { cn } from '@/lib/utils'
 
-export function cn(...inputs: ClassValue[]) {
-  return twMerge(clsx(inputs))
-}
+cn('px-4 py-2', isActive && 'bg-primary text-primary-foreground')
 ```
 
 ---
 
-## CVA Component Patterns
+## Tailwind v4 CSS Variables
+
+Colors are defined as `oklch` values in `web/styles/globals.css` and exposed as Tailwind utilities via `@theme inline`. Use semantic token names only:
+
+```tsx
+// ✅ correct — semantic tokens
+<div className="bg-background text-foreground">
+<div className="bg-card text-card-foreground border border-border rounded-lg">
+<div className="bg-primary text-primary-foreground">
+<div className="bg-muted text-muted-foreground">
+<p className="text-destructive">Error message</p>
+
+// ❌ avoid — hardcoded colors
+<div className="bg-zinc-900 text-white">
+```
+
+---
+
+## shadcn/ui Component Patterns
 
 ### Button
 
 ```tsx
-// components/ui/button.tsx
-import { cva, type VariantProps } from 'class-variance-authority'
-import { cn } from '@/lib/cn'
-import { Loader2 } from 'lucide-react'
-import * as React from 'react'
+import { Button } from '@/components/ui/button'
 
-const buttonVariants = cva(
-  // Base styles
-  'inline-flex items-center justify-center gap-2 whitespace-nowrap font-medium transition-colors ' +
-  'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 ' +
-  'disabled:pointer-events-none disabled:opacity-40 aria-busy:cursor-wait',
-  {
-    variants: {
-      variant: {
-        solid:       'bg-primary text-primary-fg hover:bg-primary-dark',
-        outline:     'border border-primary text-primary hover:bg-primary/10',
-        ghost:       'text-text-primary hover:bg-surface-subtle',
-        destructive: 'bg-error text-white hover:bg-error/90',
-        link:        'text-primary underline-offset-4 hover:underline p-0 h-auto',
-      },
-      size: {
-        xs: 'h-7 px-2.5 text-xs rounded-[var(--radius-button)]',
-        sm: 'h-8 px-3 text-sm rounded-[var(--radius-button)]',
-        md: 'h-10 px-4 text-sm rounded-[var(--radius-button)]',
-        lg: 'h-11 px-5 text-base rounded-[var(--radius-button)]',
-        xl: 'h-12 px-6 text-base rounded-[var(--radius-button)]',
-        icon: 'h-10 w-10 rounded-[var(--radius-button)]',
-      },
-    },
-    defaultVariants: { variant: 'solid', size: 'md' },
-  }
-)
+// Variants: default | destructive | outline | secondary | ghost | link
+// Sizes: default | sm | lg | icon
 
-export interface ButtonProps
-  extends React.ButtonHTMLAttributes<HTMLButtonElement>,
-    VariantProps<typeof buttonVariants> {
-  loading?: boolean
-  leftIcon?: React.ReactNode
-  rightIcon?: React.ReactNode
-  asChild?: boolean
-}
-
-const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
-  ({ className, variant, size, loading, leftIcon, rightIcon, children, disabled, ...props }, ref) => (
-    <button
-      ref={ref}
-      className={cn(buttonVariants({ variant, size }), className)}
-      disabled={disabled || loading}
-      aria-busy={loading || undefined}
-      {...props}
-    >
-      {loading
-        ? <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" />
-        : leftIcon}
-      {children}
-      {!loading && rightIcon}
-    </button>
-  )
-)
-Button.displayName = 'Button'
-
-export { Button, buttonVariants }
+<Button>Save</Button>
+<Button variant="outline" size="sm">Cancel</Button>
+<Button variant="destructive">Delete</Button>
+<Button variant="ghost" size="icon" aria-label="Close">
+  <XIcon className="h-4 w-4" aria-hidden="true" />
+</Button>
 ```
 
-### Input
+### Form (react-hook-form + zod + shadcn)
 
 ```tsx
-// components/ui/input.tsx
-import * as React from 'react'
-import { cn } from '@/lib/cn'
-
-export interface InputProps extends React.InputHTMLAttributes<HTMLInputElement> {
-  error?: boolean
-}
-
-const Input = React.forwardRef<HTMLInputElement, InputProps>(
-  ({ className, error, type, ...props }, ref) => (
-    <input
-      type={type}
-      ref={ref}
-      className={cn(
-        'flex h-10 w-full rounded-[var(--radius-input)] border bg-surface px-3 py-2 text-sm text-text-primary',
-        'placeholder:text-text-tertiary',
-        'transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-1',
-        'disabled:cursor-not-allowed disabled:opacity-50',
-        error
-          ? 'border-error focus-visible:ring-error'
-          : 'border-border',
-        className
-      )}
-      aria-invalid={error || undefined}
-      {...props}
-    />
-  )
-)
-Input.displayName = 'Input'
-
-export { Input }
-```
-
----
-
-## React 19 Features
-
-### Server Actions (form mutations)
-
-```tsx
-// app/actions/profile.ts
-'use server'
+'use client'
+import { useForm } from 'react-hook-form'
+import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
-import { revalidatePath } from 'next/cache'
+// ✅ Import Form from shadcn wrapper — NOT react-hook-form
+import { Form, FormField, FormItem, FormLabel, FormControl, FormMessage } from '@/components/ui/form'
+import { Input } from '@/components/ui/input'
+import { Button } from '@/components/ui/button'
 
 const schema = z.object({
-  name: z.string().min(2),
   email: z.string().email(),
+  password: z.string().min(8),
+})
+type FormData = z.infer<typeof schema>
+
+export function LoginForm() {
+  const form = useForm<FormData>({ resolver: zodResolver(schema) })
+
+  const onSubmit = form.handleSubmit(async (data) => {
+    // call API
+  })
+
+  return (
+    <Form {...form}>
+      <form onSubmit={onSubmit} className="space-y-4">
+        <FormField
+          control={form.control}
+          name="email"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Email</FormLabel>
+              <FormControl>
+                <Input type="email" placeholder="you@example.com" {...field} />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+        <Button type="submit" className="w-full">Sign in</Button>
+      </form>
+    </Form>
+  )
+}
+```
+
+### Dialog / Modal
+
+```tsx
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog'
+import { Button } from '@/components/ui/button'
+
+<Dialog open={open} onOpenChange={setOpen}>
+  <DialogContent>
+    <DialogHeader>
+      <DialogTitle>Create Team</DialogTitle>
+    </DialogHeader>
+    {/* form content */}
+    <DialogFooter>
+      <Button variant="outline" onClick={() => setOpen(false)}>Cancel</Button>
+      <Button type="submit">Create</Button>
+    </DialogFooter>
+  </DialogContent>
+</Dialog>
+```
+
+### Toast (Sonner)
+
+```tsx
+import { toast } from 'sonner'
+
+toast.success('Team created')
+toast.error('Something went wrong')
+toast.loading('Saving...')
+```
+
+### Dropdown Menu
+
+```tsx
+import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem } from '@/components/ui/dropdown-menu'
+import { Button } from '@/components/ui/button'
+import { MoreHorizontal as MoreHorizontalIcon } from 'lucide-react'
+
+<DropdownMenu>
+  <DropdownMenuTrigger asChild>
+    <Button variant="ghost" size="icon" aria-label="More options">
+      <MoreHorizontalIcon className="h-4 w-4" aria-hidden="true" />
+    </Button>
+  </DropdownMenuTrigger>
+  <DropdownMenuContent align="end">
+    <DropdownMenuItem onClick={onEdit}>Edit</DropdownMenuItem>
+    <DropdownMenuItem className="text-destructive" onClick={onDelete}>Delete</DropdownMenuItem>
+  </DropdownMenuContent>
+</DropdownMenu>
+```
+
+---
+
+## CVA for Custom Components (non-shadcn)
+
+Use CVA only for custom components that aren't covered by shadcn/ui:
+
+```tsx
+import { cva, type VariantProps } from 'class-variance-authority'
+import { cn } from '@/lib/utils'
+
+const statusDotVariants = cva('inline-block rounded-full', {
+  variants: {
+    status: {
+      online:  'bg-green-500 h-2 w-2',
+      away:    'bg-yellow-400 h-2 w-2',
+      offline: 'bg-muted-foreground h-2 w-2',
+    },
+  },
+  defaultVariants: { status: 'offline' },
 })
 
-export async function updateProfile(formData: FormData) {
-  const parsed = schema.safeParse(Object.fromEntries(formData))
-  if (!parsed.success) {
-    return { error: parsed.error.flatten().fieldErrors }
-  }
-  // ... save to DB
-  revalidatePath('/settings')
-  return { success: true }
-}
-```
-
-```tsx
-// components/ProfileForm.tsx
-'use client'
-import { useActionState } from 'react'
-import { updateProfile } from '@/app/actions/profile'
-
-export function ProfileForm() {
-  const [state, action, isPending] = useActionState(updateProfile, null)
-
-  return (
-    <form action={action}>
-      <input name="name" required />
-      {state?.error?.name && <p role="alert">{state.error.name[0]}</p>}
-      <Button type="submit" loading={isPending}>Save</Button>
-    </form>
-  )
-}
-```
-
-### use() for data fetching
-
-```tsx
-// app/users/page.tsx (Server Component)
-import { Suspense } from 'react'
-import { UserList } from './UserList'
-
-async function getUsers() {
-  const res = await fetch('/api/users', { next: { revalidate: 60 } })
-  return res.json()
+interface StatusDotProps extends VariantProps<typeof statusDotVariants> {
+  className?: string
 }
 
-export default function UsersPage() {
-  const usersPromise = getUsers()
-  return (
-    <Suspense fallback={<UserListSkeleton />}>
-      <UserList promise={usersPromise} />
-    </Suspense>
-  )
-}
-
-// UserList.tsx (Client Component)
-'use client'
-import { use } from 'react'
-
-export function UserList({ promise }: { promise: Promise<User[]> }) {
-  const users = use(promise)  // suspends until resolved
-  return <ul>{users.map(u => <li key={u.id}>{u.name}</li>)}</ul>
+function StatusDot({ status, className }: StatusDotProps) {
+  return <span className={cn(statusDotVariants({ status }), className)} />
 }
 ```
 
 ---
 
-## Theme Switching (light/dark)
+## Zustand Store Pattern (used in this project)
+
+```ts
+// stores/example.store.ts
+import { create } from 'zustand'
+import { persist } from 'zustand/middleware'
+
+interface ExampleState {
+  items: string[]
+  setItems: (items: string[]) => void
+}
+
+export const useExampleStore = create<ExampleState>()(
+  persist(
+    (set) => ({
+      items: [],
+      setItems: (items) => set({ items }),
+    }),
+    {
+      name: 'example-storage',
+      skipHydration: true,  // always use skipHydration for SSR safety
+    }
+  )
+)
+```
+
+**Hydration pattern** — call `rehydrate()` in `useEffect`, gate rendering behind `mounted`:
+```tsx
+useEffect(() => {
+  useExampleStore.persist.rehydrate()
+  setMounted(true)
+}, [])
+```
+
+---
+
+## Dark Mode
+
+Dark mode uses the `class` strategy. Toggle by adding/removing `dark` class on `<html>`:
 
 ```tsx
-// hooks/useTheme.ts
-'use client'
-import { useEffect, useState } from 'react'
-
-export function useTheme() {
-  const [theme, setTheme] = useState<'light' | 'dark'>('light')
-
-  useEffect(() => {
-    const saved = localStorage.getItem('theme') as 'light' | 'dark' | null
-    const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches
-    setTheme(saved ?? (prefersDark ? 'dark' : 'light'))
-  }, [])
-
-  useEffect(() => {
-    document.documentElement.classList.toggle('dark', theme === 'dark')
-    localStorage.setItem('theme', theme)
-  }, [theme])
-
-  return { theme, setTheme, toggle: () => setTheme(t => t === 'dark' ? 'light' : 'dark') }
-}
+document.documentElement.classList.toggle('dark', isDark)
 ```
+
+Tailwind dark variant: `dark:bg-background dark:text-foreground`
+Defined in globals.css via `@custom-variant dark (&:is(.dark *))`.

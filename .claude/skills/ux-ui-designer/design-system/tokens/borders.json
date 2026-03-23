@@ -1,71 +1,52 @@
 {
   "$schema": "https://tr.designtokens.org/format/",
-  "$description": "Border radius and width scales, plus semantic component radii.",
+  "$description": "Border radius and width for SAN.ai. Radius is driven by --radius: 0.625rem (base) in globals.css, with computed variants in @theme inline. Use Tailwind radius utilities: rounded-sm/md/lg/xl/2xl/3xl/4xl.",
 
   "radius": {
+    "$description": "Driven by CSS variable --radius: 0.625rem in :root. Computed via calc() in @theme inline.",
+    "cssVarBase": "--radius",
+    "baseValue": "0.625rem",
+
     "scale": {
-      "none": { "$value": "0px",      "$type": "dimension" },
-      "xs":   { "$value": "2px",      "$type": "dimension" },
-      "sm":   { "$value": "4px",      "$type": "dimension" },
-      "md":   { "$value": "6px",      "$type": "dimension" },
-      "lg":   { "$value": "8px",      "$type": "dimension" },
-      "xl":   { "$value": "12px",     "$type": "dimension" },
-      "2xl":  { "$value": "16px",     "$type": "dimension" },
-      "3xl":  { "$value": "24px",     "$type": "dimension" },
-      "full": { "$value": "9999px",   "$type": "dimension" }
+      "none": { "$value": "0px",       "$type": "dimension", "tailwind": "rounded-none" },
+      "sm":   { "$value": "calc(var(--radius) - 4px)", "$type": "dimension", "tailwind": "rounded-sm",  "approx": "0.375rem / 6px"  },
+      "md":   { "$value": "calc(var(--radius) - 2px)", "$type": "dimension", "tailwind": "rounded-md",  "approx": "0.5rem / 8px"    },
+      "lg":   { "$value": "var(--radius)",              "$type": "dimension", "tailwind": "rounded-lg",  "approx": "0.625rem / 10px" },
+      "xl":   { "$value": "calc(var(--radius) + 4px)", "$type": "dimension", "tailwind": "rounded-xl",  "approx": "0.875rem / 14px" },
+      "2xl":  { "$value": "calc(var(--radius) + 8px)", "$type": "dimension", "tailwind": "rounded-2xl", "approx": "1.125rem / 18px" },
+      "3xl":  { "$value": "calc(var(--radius) + 12px)","$type": "dimension", "tailwind": "rounded-3xl", "approx": "1.375rem / 22px" },
+      "4xl":  { "$value": "calc(var(--radius) + 16px)","$type": "dimension", "tailwind": "rounded-4xl", "approx": "1.625rem / 26px" },
+      "full": { "$value": "9999px",    "$type": "dimension", "tailwind": "rounded-full" }
     },
 
     "semantic": {
-      "$description": "Component-specific radii. Reference scale values. Driven by design-system.config.json > theme.radius preset.",
-
-      "presets": {
-        "$description": "Set theme.radius in config to one of: sharp | sm | md | lg | xl | pill",
-        "sharp": {
-          "button": "0px", "input": "0px", "card": "0px", "badge": "2px", "modal": "4px"
-        },
-        "sm": {
-          "button": "4px", "input": "4px", "card": "4px", "badge": "4px", "modal": "6px"
-        },
-        "md": {
-          "button": "6px", "input": "6px", "card": "8px", "badge": "4px", "modal": "8px"
-        },
-        "lg": {
-          "button": "8px", "input": "8px", "card": "12px", "badge": "6px", "modal": "12px"
-        },
-        "xl": {
-          "button": "12px", "input": "12px", "card": "16px", "badge": "8px", "modal": "16px"
-        },
-        "pill": {
-          "button": "9999px", "input": "9999px", "card": "16px", "badge": "9999px", "modal": "16px"
-        }
-      },
-
-      "button":  { "$value": "{radius.scale.md}",   "$type": "dimension" },
-      "input":   { "$value": "{radius.scale.md}",   "$type": "dimension" },
-      "card":    { "$value": "{radius.scale.lg}",   "$type": "dimension" },
-      "badge":   { "$value": "{radius.scale.sm}",   "$type": "dimension" },
-      "modal":   { "$value": "{radius.scale.xl}",   "$type": "dimension" },
-      "drawer":  { "$value": "{radius.scale.none}", "$type": "dimension" },
-      "tooltip": { "$value": "{radius.scale.sm}",   "$type": "dimension" },
-      "avatar":  { "$value": "{radius.scale.full}", "$type": "dimension" },
-      "tag":     { "$value": "{radius.scale.full}", "$type": "dimension" }
+      "$description": "Component-specific radius recommendations",
+      "button":  "rounded-md",
+      "input":   "rounded-md",
+      "card":    "rounded-lg",
+      "badge":   "rounded-md",
+      "dialog":  "rounded-lg",
+      "sheet":   "rounded-none (edge-attached)",
+      "drawer":  "rounded-t-lg (mobile bottom sheet)",
+      "tooltip": "rounded-md",
+      "avatar":  "rounded-full",
+      "tag":     "rounded-full",
+      "popover": "rounded-lg"
     }
   },
 
   "width": {
     "scale": {
-      "0":   { "$value": "0px",  "$type": "dimension" },
-      "1":   { "$value": "1px",  "$type": "dimension" },
-      "2":   { "$value": "2px",  "$type": "dimension" },
-      "4":   { "$value": "4px",  "$type": "dimension" },
-      "8":   { "$value": "8px",  "$type": "dimension" }
+      "0": { "$value": "0px", "$type": "dimension" },
+      "1": { "$value": "1px", "$type": "dimension" },
+      "2": { "$value": "2px", "$type": "dimension" },
+      "4": { "$value": "4px", "$type": "dimension" }
     },
-
     "semantic": {
-      "thin":    { "$value": "{width.scale.1}", "$type": "dimension" },
-      "default": { "$value": "{width.scale.1}", "$type": "dimension" },
-      "medium":  { "$value": "{width.scale.2}", "$type": "dimension" },
-      "thick":   { "$value": "{width.scale.4}", "$type": "dimension" }
+      "thin":    { "$value": "1px", "tailwind": "border" },
+      "default": { "$value": "1px", "tailwind": "border" },
+      "medium":  { "$value": "2px", "tailwind": "border-2" },
+      "thick":   { "$value": "4px", "tailwind": "border-4" }
     }
   }
 }

@@ -1,71 +1,98 @@
 {
-  "$comment": "Design system configuration. Edit this file to set your project theme and active tokens. The LLM reads this to generate consistent, on-brand code.",
+  "$comment": "Design system configuration for SAN.ai. Component library: shadcn/ui (new-york style, neutral base). The LLM reads this to generate consistent, on-brand code.",
 
   "theme": {
-    "name": "my-app",
+    "name": "san-ai",
     "mode": "light",
-    "primaryColor": "blue",
-    "accentColor": "purple",
-    "neutralColor": "slate",
-    "errorColor": "red",
+    "primaryColor": "neutral",
+    "accentColor": "neutral",
+    "neutralColor": "neutral",
+    "errorColor": "destructive",
     "warningColor": "yellow",
     "successColor": "green",
     "infoColor": "blue",
 
-    "radius": "md",
+    "radius": "lg",
+    "radiusBase": "0.625rem",
     "density": "comfortable",
 
-    "fontFamilySans": "Inter",
-    "fontFamilySerif": "Georgia",
-    "fontFamilyMono": "JetBrains Mono",
+    "fontFamilySans": "Geist Sans",
+    "fontFamilyMono": "Geist Mono",
     "typeScale": "majorThird"
   },
 
-  "tokenOverrides": {
-    "$comment": "Override any token value here. Keys are dot-notation paths into tokens/*.json (e.g. 'semantic.primary.DEFAULT').",
-    "examples": {
-      "semantic.primary.DEFAULT": "#2563eb",
-      "semantic.radius.button": "9999px",
-      "semantic.spacing.componentPaddingMd": "12px"
-    }
+  "componentLibrary": {
+    "name": "shadcn-ui",
+    "style": "new-york",
+    "baseColor": "neutral",
+    "cssVariables": true,
+    "componentsPath": "@/components/ui",
+    "utilsPath": "@/lib/utils",
+    "addCommand": "cd web && pnpm shadcn add <component-name>",
+    "rules": [
+      "NEVER hand-edit files in components/ui/ — always use `pnpm shadcn add` to add or update them",
+      "Always import Form from @/components/ui/form (shadcn wrapper), NOT from react-hook-form",
+      "Import cn() from @/lib/utils",
+      "All installed components live in web/components/ui/"
+    ],
+    "installedComponents": [
+      "accordion", "alert", "alert-dialog", "aspect-ratio", "avatar",
+      "badge", "breadcrumb", "button", "button-group", "calendar",
+      "card", "carousel", "chart", "checkbox", "collapsible",
+      "command", "context-menu", "dialog", "drawer", "dropdown-menu",
+      "empty", "field", "form", "hover-card", "input", "input-otp",
+      "item", "kbd", "label", "menubar", "navigation-menu", "pagination",
+      "popover", "progress", "radio-group", "resizable", "scroll-area",
+      "select", "separator", "sheet", "sidebar", "skeleton", "slider",
+      "sonner", "spinner", "switch", "table", "tabs", "textarea",
+      "toggle", "toggle-group", "tooltip"
+    ]
   },
 
   "components": {
     "button": {
-      "defaultVariant": "solid",
-      "defaultSize": "md",
+      "defaultVariant": "default",
+      "defaultSize": "default",
       "rounded": false,
       "fullWidthOnMobile": true
     },
     "input": {
       "defaultVariant": "outline",
-      "defaultSize": "md",
+      "defaultSize": "default",
       "floatingLabel": false
     },
     "card": {
       "defaultShadow": "sm",
-      "defaultRadius": "md",
+      "defaultRadius": "lg",
       "defaultPadding": "lg"
     },
-    "modal": {
+    "dialog": {
       "closeOnBackdrop": true,
       "defaultSize": "md"
     },
     "toast": {
+      "library": "sonner",
       "position": "bottom-right",
       "duration": 4000
     }
   },
 
   "framework": {
-    "name": "react-tailwind",
+    "name": "nextjs-shadcn",
+    "nextjsVersion": "16",
     "tailwindVersion": "4",
     "reactVersion": "19",
     "typescript": true,
+    "strictMode": true,
     "cssVariables": true,
     "componentVariants": "cva",
     "iconLibrary": "lucide-react",
-    "animationLibrary": "motion"
+    "iconImportRule": "Always alias lucide-react icons with an Icon suffix: `import { Bell as BellIcon } from 'lucide-react'`. Exception: DynamicIcon from lucide-react/dynamic.",
+    "animationLibrary": "tw-animate-css",
+    "stateManagement": "zustand",
+    "formLibrary": "react-hook-form + zod",
+    "httpClient": "axios",
+    "packageManager": "pnpm"
   },
 
   "accessibility": {
@@ -79,6 +106,7 @@
   "darkMode": {
     "enabled": true,
     "strategy": "class",
-    "defaultMode": "system"
+    "defaultMode": "system",
+    "cssVariant": "@custom-variant dark (&:is(.dark *))"
   }
 }

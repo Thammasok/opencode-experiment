@@ -8,89 +8,122 @@ This document describes the complete AI agent workflow for agentic software deve
 
 ```mermaid
 flowchart LR
+    UR_BA["User Review (UR-BA)"]
+    UR_SWT["User Review (UR-SWT)"]
+    UR_UX["User Review (UR-UX)"]
+    UR_ARCH["User Review (UR-ARCH)"]
+    UR_PM["User Review (UR-PM)"]
+    UR_DOC["User Review (UR-DOC)"]
+    UR_UAT["User Review (UR-UAT)"]
+
+    START(["Start"])
+
+    %% Phase 1 — Product Discovery
     subgraph PD["Product Discovery"]
-        BA["Requirement Gathering (BA)"]
-
-        subgraph PARALLEL["Design Phase (parallel)"]
-            SWT["Test Design (SWT)"]
-            UX["UX/UI Design"]
-        end
-
-        BA --> SWT
-        BA --> UX
+      BA["Requirement Gathering (BA)"]
+      USER_APPROVED{{"is Approve?"}}
+      subgraph DESIGN_PARALLEL["Design Phase (parallel)"]
+          SWT["Test Design (SWT)"]
+          UX["UX/UI Design"]
+      end
+      BA -- Need User Review --> UR_BA
+      UR_BA --> USER_APPROVED
+      USER_APPROVED -- "User needs to adjust" --> BA
+      USER_APPROVED -- "Approved" --> DESIGN_PARALLEL
     end
 
-    HR_BA["Human Review\nHR-BA"]
-    HR_SWT["Human Review\nHR-SWT"]
-    HR_UX["Human Review\nHR-UX"]
-    HR_PM["Human Review\nHR-PM"]
-    HR_ARCH["Human Review\nHR-ARCH"]
-    HR_TW["Human Review\nHR-TW"]
+    %% Phase 2 — System Design
+    subgraph ARCH["System Design (per scenario) — C4 Model"]
+      C4CTX["System Context Diagram\n(C4 L1 — People + Software Systems)"]
+      C4CONT["Container Diagram\n(C4 L2 — Apps, Services & Data Stores)"]
+      C4COMP["Component Diagram\n(C4 L3 — Internal Components per Container)"]
+      C4CODE["Code Diagram\n(C4 L4 — API Contract + DB Schema + OpenAPI Spec)"]
+      C4CTX --> C4CONT --> C4COMP --> C4CODE
+    end
 
-    PM["Breakdown Scenarios into Iterations (PM)"]
+    %% Phase 3 — Iteration Planning
+    subgraph PRM["Project Management (Backlogs)"]
+      PM["Breakdown Scenarios into Iterations (PM)"]
+      PMBACKL["Project Backlogs"]
+      PM --> UR_PM
+      USER_PM_APPROVED{{"is Approve?"}}
+      UR_PM -- Need User Review --> USER_PM_APPROVED
+      USER_PM_APPROVED -- "User needs to adjust" --> PM
+      USER_PM_APPROVED -- "Approved" --> PMBACKL
+    end
 
+    %% Phase 4 — Iteration Execution
     subgraph ITERATION["Iteration — one scenario at a time"]
-        ORC["AI Orchestrator (receives SC-xxx + TC-xxx)"]
-
-        subgraph ARCH["Just-enough Architecture (per scenario)"]
-            APIC["API Contract"]
-            DBS["DB Schema"]
-            OPENAPI["OpenAPI Spec"]
-        end
-
-        subgraph DEVLOOP["Development Loop"]
-            TDD["Write Failing Test (TDD Red)"]
-            IMPL["Implement (TDD Green)"]
-            IMPLCHECK{{"Green attempts >= 10?"}}
-            IMPLBLOCK["🚨 Blocked — Escalate to Human"]
-            REFAC["Refactor"]
-            INT["Integrate"]
-            TESTALL["Test All (automated suite)"]
-            TECHDOC["Technical Docs (README, setup)"]
-        end
+      ORC["AI Orchestrator (receives SC-xxx + TC-xxx)"]
+      PICKUP["Pickup task from Backlogs"]
+      subgraph DEVLOOP["Development Loop"]
+        TDD["Write Failing Test (TDD Red)"]
+        IMPL["Implement (TDD Green)"]
+        IMPLCHECK{{"Green attempts >= 5?"}}
+        IMPLBLOCK["🚨 Blocked — Escalate to User"]
+        REFAC["Refactor"]
+        INT["Integrate"]
+        TESTALL["Test All (automated suite)"]
+        TECHDOC["Technical Docs (README, setup)"]
+      end
     end
 
     UAT["UAT (PM + Software Tester)"]
-    HUMAN["Human Review"]
     PASS{{"is Pass?"}}
     BUG["Fix Bug"]
     REQ["Revisit Requirement (BA / PM)"]
 
+    %% Phase 5 — Documentation & Retrospective
     subgraph DOCS["Documentation"]
         USERDOC["User Documentation (technical-writer)"]
+        ITERUPDATE["Iteration Update (PM adapts backlog + generates release notes)"]
+        USERDOC --> UR_DOC
+        UR_DOC --> ITERUPDATE
     end
 
-    RETRO["Iteration Retrospect (PM adapts backlog + generates release notes)"]
+    subgraph RETROS["Retrospective"]
+        USERRETRO["User creates rules or conditions to improve next Iteration"]
+    end
 
-    BA --> HR_BA
-    HR_BA --> SWT
-    HR_BA --> UX
-    SWT --> HR_SWT
-    UX --> HR_UX
-    HR_SWT --> PM
-    HR_UX --> PM
-    PM --> HR_PM
-    HR_PM --> ORC
-    ORC --> ARCH
-    APIC --> TDD
-    DBS --> TDD
+    %% Flow
+    START --> BA
+
+    SWT --> UR_SWT
+    USER_SWT_APPROVED{{"is Approve?"}}
+    UR_SWT -- Need User Review --> USER_SWT_APPROVED
+    USER_SWT_APPROVED -- "User needs to adjust" --> UR_SWT
+    USER_SWT_APPROVED -- "Approved" --> ARCH
+
+    UX --> UR_UX
+    USER_UX_APPROVED{{"is Approve?"}}
+    UR_UX -- Need User Review --> USER_UX_APPROVED
+    USER_UX_APPROVED -- "User needs to adjust" --> UR_UX
+    USER_UX_APPROVED -- "Approved" --> ARCH
+
+    C4CODE --> UR_ARCH
+    USER_ARCH_APPROVED{{"is Approve?"}}
+    UR_ARCH -- Need User Review --> USER_ARCH_APPROVED
+    USER_ARCH_APPROVED -- "User needs to adjust" --> ARCH
+    USER_ARCH_APPROVED -- "Approved" --> PM
+
+    PMBACKL -- "Pickup to Develop" --> ORC
+    ORC --> PICKUP --> TDD
+
     TDD --> IMPL --> IMPLCHECK
     IMPLCHECK -- "No" --> REFAC --> INT --> TESTALL --> TECHDOC
     IMPLCHECK -- "Yes" --> IMPLBLOCK
-    ARCH --> HR_ARCH
-    HR_ARCH --> TDD
-    TECHDOC --> UAT
-    UAT --> HUMAN
-    HUMAN --> PASS
+    IMPLBLOCK -- "Fixed Done" --> TESTALL
 
+    TECHDOC --> UAT
+    UAT --> UR_UAT
+    UR_UAT --> PASS
     PASS -- "Yes next scenario" --> ORC
-    PASS -- "No: bug" --> BUG --> DEVLOOP
+    PASS -- "No: have bug" --> BUG --> DEVLOOP
     PASS -- "No: wrong requirement" --> REQ --> PM
 
     ORC -- "iteration done (all scenarios pass)" --> USERDOC
-    USERDOC --> HR_TW
-    HR_TW --> RETRO
-    RETRO -- "next iteration" --> PM
+    ITERUPDATE --> RETROS
+    USERRETRO -- "next iteration" --> ORC
 ```
 
 ---
@@ -104,18 +137,20 @@ flowchart LR
 **Purpose:** Gather and structure requirements for features, systems, or products.
 
 **Triggers:**
+
 - requirements, user story, user story map
 - business flow, business rules, business conditions
 - acceptance criteria, functional requirement, NFR, FR
 - "what does the system need to do", "gather requirements for"
 
 **Workflow Steps:**
+
 1. **Elicit requirements** — Ask stakeholder questions
 2. **Build User Story Map** — Understand business flow and conditions
 3. **Draw Swimlane** — Mermaid diagrams for actor interactions
 4. **Specify Input/Output** — Field data types and formats
 5. **Write FR and NFR** — Structured requirements document
-6. **[Human Review]** — Review requirements for completeness and accuracy
+6. **[User Review — UR-BA]** — Review requirements for completeness and accuracy
 
 **Outputs:**
 | Artifact | ID Format | Storage |
@@ -124,7 +159,6 @@ flowchart LR
 | Functional Requirements | `FR-[FEATURE]-###` | `docs/requirements/functional-requirements.md` |
 | Non-Functional Requirements | `NFR-[FEATURE]-###` | `docs/requirements/non-functional-requirements.md` |
 | Field Specifications | — | `docs/requirements/field-specifications.md` |
-| Human Review Sign-off | `HR-[PHASE]-###` | `docs/reviews/human-reviews.md` |
 
 **Feeds into:** `software-tester-design`, `ux-ui-designer`
 
@@ -137,18 +171,20 @@ flowchart LR
 **Purpose:** Design tests before writing any code (Shift-Left Testing).
 
 **Triggers:**
+
 - test design, test planning, test scenarios, test cases
 - SUT, system under test, BDD, TDD
 - "what should I test", "design tests for", "create test cases for"
 
 **Workflow Steps:**
+
 1. **Define SUT** — System Under Test definition
 2. **Map Business Flow** — Understand process from requirements
 3. **Specify Input/Output** — Per action field specs
 4. **Design Test Scenarios** — High-level what to test
 5. **Design Test Cases** — Apply techniques (EP, BVA, Decision Tables, State Transition, Pairwise, Error Guessing)
 6. **Design Test Data** — Valid, invalid, edge case data sets
-7. **[Human Review]** — Validate test coverage and quality
+7. **[User Review — UR-SWT]** — Validate test coverage and quality
 
 **Outputs:**
 | Artifact | ID Format | Storage |
@@ -157,9 +193,8 @@ flowchart LR
 | Test Scenarios | `SC-[FEATURE]-###` | `docs/test-design/test-scenarios.md` |
 | Test Cases | `TC-[FEATURE]-###` | `docs/test-design/test-cases.md` |
 | Test Data | `TD-[TYPE]-###` | `docs/test-design/test-data.md` |
-| Human Review Sign-off | `HR-[PHASE]-###` | `docs/reviews/human-reviews.md` |
 
-**Feeds into:** `project-management`, `software-architecture`, `ai-orchestrator`
+**Feeds into:** `software-architecture`
 
 ---
 
@@ -170,18 +205,20 @@ flowchart LR
 **Purpose:** Design user interfaces, components, and design systems.
 
 **Triggers:**
+
 - design system, UI components, UX flows, wireframes
 - prototypes, accessibility, WCAG, ARIA
 - color tokens, typography scale, responsive design
 - "design/review/improve UI"
 
 **Workflow Steps:**
+
 1. **Read Design System Config** — Understand theme and framework
 2. **Design User Journeys** — Map user flows (UJ-xxx)
 3. **Create Wireframes** — Layout structure (WF-xxx)
 4. **Specify UI Components** — Detailed specs (UI-xxx)
 5. **Define Design System** — Tokens, colors, typography, spacing
-6. **[Human Review]** — Validate design against requirements
+6. **[User Review — UR-UX]** — Validate design against requirements
 
 **Outputs:**
 | Artifact | ID Format | Storage |
@@ -191,33 +228,72 @@ flowchart LR
 | Wireframes | `WF-[FEATURE]-###` | `docs/ux-design/wireframes.md` |
 | UI Specifications | `UI-[FEATURE]-###` | `docs/ux-design/ui-specifications.md` |
 | Design System | — | `docs/ux-design/design-system.md` |
-| Human Review Sign-off | `HR-[PHASE]-###` | `docs/reviews/human-reviews.md` |
 
-**Feeds into:** `project-management`, `ai-orchestrator`
+**Feeds into:** `software-architecture`
 
 ---
 
-### 4. Project Management (PM)
+### 4. Software Architecture (System Design)
+
+**Skill:** `software-architecture`
+
+**Purpose:** Design just-enough technical architecture per scenario using the C4 Model — no big upfront design.
+
+**Triggers:**
+
+- architecture, system design, C4 model
+- API design, API contract, database design, schema, data model, ERD
+- OpenAPI, Swagger
+- "how should I structure the API", "what tables do I need"
+
+**Workflow Steps — C4 Model drill-down:**
+
+1. **C4 L1 — System Context Diagram** — Identify People (users, personas) and external Software Systems that interact with the system
+2. **C4 L2 — Container Diagram** — Define apps, services, and data stores; document tech choices per container
+3. **C4 L3 — Component Diagram** — Break down each container into its internal components and their responsibilities
+4. **C4 L4 — Code Diagram** — Specify API contracts (endpoints, request/response, errors), DB schema (tables, indexes, constraints), and generate OpenAPI spec; record ADRs for trade-offs
+5. **[User Review — UR-ARCH]** — Approve architecture before project planning begins
+
+**Outputs:**
+| Artifact | Level | Storage |
+|----------|-------|---------|
+| System Context Diagram | C4 L1 | `docs/architecture/system-context.md` |
+| Container Diagram | C4 L2 | `docs/architecture/containers.md` |
+| Component Diagram | C4 L3 | `docs/architecture/components.md` |
+| API Contracts | C4 L4 | `docs/architecture/api-contracts.md` |
+| Database Schema | C4 L4 | `docs/architecture/database-schema.md` |
+| Integration Contracts | C4 L4 | `docs/architecture/integration-contracts.md` |
+| ADRs | C4 L4 | `docs/architecture/adrs/ADR-###-*.md` |
+| OpenAPI Specs | C4 L4 | `docs/architecture/openapi/[feature]-api.yaml` |
+
+**Feeds into:** `project-management`
+
+---
+
+### 5. Project Management (PM)
 
 **Skill:** `project-management`
 
-**Purpose:** Plan and coordinate delivery by consolidating BA and QA artifacts into structured project plans.
+**Purpose:** Plan and coordinate delivery by consolidating all discovery + architecture artifacts into a structured backlog.
 
 **Triggers:**
+
 - project plan, sprint plan, iteration plan
 - task breakdown, developer tasks, backlog, epic
 - agile, iterative, incremental, sprint
 - "break this into tasks", "plan the sprint for"
 
 **Workflow Steps:**
-1. **Ingest & Validate** — Consume US, FR, NFR, SC, TC, UJ, WF, UI
+
+1. **Ingest & Validate** — Consume US, FR, NFR, SC, TC, UJ, WF, UI, Architecture
 2. **Build Epic → Story Backlog** — Group related items
 3. **Break Down DEV Tasks** — Per layer (API, DB, Frontend, Infra)
 4. **Map Dependencies** — Blocked by / Blocks
 5. **Slice into Iterations** — Assign SC + TC per iteration as Definition of Done
 6. **Produce Traceability Matrix** — End-to-end mapping
-7. **[Human Review]** — Approve iteration plan and task breakdown
-8. **Generate Release Notes** — At iteration retrospect
+7. **[User Review — UR-PM]** — Approve iteration plan and task breakdown
+8. **Publish Backlogs** — Ready for ORC to pick up
+9. **Generate Release Notes** — At iteration retrospect (Iteration Update)
 
 **Outputs:**
 | Artifact | ID Format | Storage |
@@ -227,44 +303,8 @@ flowchart LR
 | Iteration Cards | — | `docs/project/iterations/iteration-N.md` |
 | Traceability Matrix | — | `docs/project/traceability-matrix.md` |
 | Release Notes | — | `docs/project/release-notes.md` |
-| Human Review Sign-off | `HR-[PHASE]-###` | `docs/reviews/human-reviews.md` |
 
-**Feeds into:** `software-architecture`, `ai-orchestrator`
-
----
-
-### 5. Software Architecture
-
-**Skill:** `software-architecture`
-
-**Purpose:** Design just-enough technical architecture per scenario (not upfront big design).
-
-**Triggers:**
-- architecture, API design, API contract
-- database design, schema, data model, ERD
-- OpenAPI, Swagger, system design
-- "how should I structure the API", "what tables do I need"
-
-**Workflow Steps:**
-1. **Understand Scenario Scope** — Read SC-xxx, TC-xxx
-2. **Design API Contract** — Endpoints, request/response, errors
-3. **Design Database Schema** — Tables, columns, indexes, constraints
-4. **Document Integration Points** — External services
-5. **Record ADRs** — Architecture Decision Records for trade-offs
-6. **Generate OpenAPI Spec** — API documentation
-7. **[Human Review]** — Approve architecture decisions
-
-**Outputs:**
-| Artifact | ID Format | Storage |
-|----------|-----------|---------|
-| API Contracts | — | `docs/architecture/api-contracts.md` |
-| Database Schema | — | `docs/architecture/database-schema.md` |
-| Integration Contracts | — | `docs/architecture/integration-contracts.md` |
-| ADRs | `ADR-###` | `docs/architecture/adrs/ADR-###-*.md` |
-| OpenAPI Specs | — | `docs/architecture/openapi/[feature]-api.yaml` |
-| Human Review Sign-off | `HR-[PHASE]-###` | `docs/reviews/human-reviews.md` |
-
-**Feeds into:** `ai-orchestrator`
+**Feeds into:** `ai-orchestrator` (via Project Backlogs)
 
 ---
 
@@ -275,24 +315,27 @@ flowchart LR
 **Purpose:** Drive the TDD development loop for a single scenario autonomously.
 
 **Triggers:**
+
 - implement scenario, TDD, test-driven development
 - red-green-refactor, write the test first
 - implement SC-xxx, "make TC-xxx pass"
 - "start the dev loop", "orchestrate development"
 
 **Workflow Steps:**
-1. **Load Scenario Context** — SC + TC + Architecture
-2. **Write Failing Test (TDD Red)** — Test must fail first
-3. **Implement Minimum Code (TDD Green)** — Just enough to pass
+
+1. **Pick up task from Backlogs** — Select next SC-xxx from Project Backlogs
+2. **Load Scenario Context** — SC + TC + Architecture (C4 L4 artifacts)
+3. **Write Failing Test (TDD Red)** — Test must fail first
+4. **Implement Minimum Code (TDD Green)** — Just enough to pass
    - Track consecutive failed Green attempts
-   - **If 10 or more consecutive Green attempts all fail → stop, escalate to human with a summary of what was tried and why it is stuck**
-4. **Refactor** — Clean up without changing behavior
-5. **Integrate** — Ensure changes work with existing code
-6. **Run Full Test Suite** — All tests must pass
-7. **Generate Technical Documentation** — README, JSDoc, inline comments
-8. **[Human Review]** — Code review and quality gate before UAT
+   - **If 5 or more consecutive Green attempts all fail → stop, escalate to user with a summary of what was tried and why it is stuck**
+5. **Refactor** — Clean up without changing behavior
+6. **Integrate** — Ensure changes work with existing code
+7. **Run Full Test Suite** — All tests must pass
+8. **Generate Technical Documentation** — README, JSDoc, inline comments
 
 **The Red-Green-Refactor Cycle:**
+
 ```
    RED          GREEN           REFACTOR
    ───          ─────           ────────
@@ -310,15 +353,15 @@ flowchart LR
 
    ⚠️  GREEN ESCALATION RULE
    ──────────────────────────
-   If the test still FAILS after ~10 consecutive
+   If the test still FAILS after ~5 consecutive
    implementation attempts:
      → STOP retrying
      → Compile a summary:
          • What was tried (approaches, changes)
          • Why each attempt failed
          • What is blocking progress
-     → Escalate to Human for guidance
-     → Resume only after human unblocks
+     → Escalate to User for guidance
+     → Resume only after user unblocks
 ```
 
 **Outputs:**
@@ -328,9 +371,8 @@ flowchart LR
 | Implementation Code | `src/` |
 | Database Migrations | `migrations/` |
 | Technical Docs | `README.md`, inline docs |
-| Human Review Sign-off | `docs/reviews/human-reviews.md` |
 
-**Feeds into:** `Human Review / UAT`
+**Feeds into:** `UAT`
 
 ---
 
@@ -341,11 +383,13 @@ flowchart LR
 **Purpose:** Translate test case designs (TC-xxx) into runnable automated test scripts.
 
 **Triggers:**
+
 - automate test, write test code
 - test automation, create test script
 - implement TC-xxx
 
 **Workflow:**
+
 - Receives TC-xxx from `software-tester-design`
 - Translates into runnable scripts per test level (Unit, API, Component, E2E)
 - Uses appropriate test frameworks (Jest, Vitest, Playwright, etc.)
@@ -359,6 +403,7 @@ flowchart LR
 **Purpose:** General coding, debugging, code review, and implementation assistance.
 
 **Triggers:**
+
 - implement, code, debug, fix bug
 - code review, refactor
 - general programming questions
@@ -369,21 +414,23 @@ flowchart LR
 
 **Skill:** `technical-writer`
 
-**Purpose:** Generate user-facing documentation after UAT passes.
+**Purpose:** Generate user-facing documentation after all scenarios in an iteration pass UAT.
 
 **Triggers:**
+
 - user documentation, user guide, help docs
 - tutorial, onboarding, FAQ, troubleshooting
 - "write documentation for users", "create a user guide"
 
 **Workflow Steps:**
+
 1. **Understand Feature** — From user perspective
 2. **Identify Documentation Needs** — What users need to know
 3. **Write User Guide** — Step-by-step instructions
 4. **Create Tutorials** — How-to guides
 5. **Write FAQ** — Common questions
 6. **Create In-App Help** — Contextual help text
-7. **[Human Review]** — Validate documentation quality and accuracy
+7. **[User Review — UR-DOC]** — Validate documentation quality and accuracy
 
 **Outputs:**
 | Artifact | Storage |
@@ -392,9 +439,8 @@ flowchart LR
 | Tutorials | `docs/user-guide/tutorials/` |
 | FAQ | `docs/user-guide/faq.md` |
 | Troubleshooting | `docs/user-guide/troubleshooting.md` |
-| Human Review Sign-off | `docs/reviews/human-reviews.md` |
 
-**Runs AFTER:** UAT passes
+**Runs AFTER:** All scenarios in the iteration pass UAT
 
 ---
 
@@ -410,9 +456,9 @@ Phase 1: Product Discovery
 │    • Define input/output field specifications                   │
 └─────────────────────────┬───────────────────────────────────────┘
                           │
-                          ▼ HR-BA (Human Review)
+                          ▼ UR-BA (User Review)
         ┌─────────────────┴─────────────────┐
-        │                                   │
+        │                                   │ (parallel)
         ▼                                   ▼
 ┌──────────────────┐              ┌──────────────────┐
 │ 2. software-     │              │ 3. ux-ui-        │
@@ -425,156 +471,105 @@ Phase 1: Product Discovery
 │ • Test data      │              │ • Design system  │
 └────────┬─────────┘              └────────┬─────────┘
          │                                 │
-         ▼ HR-SWT                         ▼ HR-UX
+         ▼ UR-SWT                         ▼ UR-UX
          └────────────┬────────────────────┘
-                      │
+                      │ (both feed into System Design)
                       ▼
-Phase 2: Iteration Planning
-──────────────────────────
-┌─────────────────────────────────────────────────────────────────┐
-│ 4. project-management                                           │
-│    • Ingest all artifacts                                       │
-│    • Build Epic → Story backlog                                 │
-│    • Break down DEV-xxx tasks                                   │
-│    • Slice into iterations with SC + TC as Definition of Done   │
-│    • Produce traceability matrix                                │
-└─────────────────────────┬───────────────────────────────────────┘
-                          │
-                          ▼ HR-PM (Human Review)
-                          │
-Phase 3: Iteration Execution (repeat per scenario)
+Phase 2: System Design (per scenario) — C4 Model
 ─────────────────────────────────────────────────
 ┌─────────────────────────────────────────────────────────────────┐
-│ 5. software-architecture                                        │
-│    • Design API contract for scenario                           │
-│    • Design database schema                                     │
-│    • Generate OpenAPI spec                                      │
-│    • Record ADRs                                                │
+│ 4. software-architecture                                        │
+│                                                                 │
+│    C4 L1 → System Context  (People + Software Systems)         │
+│         ↓                                                       │
+│    C4 L2 → Container       (Apps, Services, Data Stores)       │
+│         ↓                                                       │
+│    C4 L3 → Component       (Internal structure per container)  │
+│         ↓                                                       │
+│    C4 L4 → Code            (API Contract + DB Schema + OpenAPI)│
 └─────────────────────────┬───────────────────────────────────────┘
                           │
-                          ▼ HR-ARCH (Human Review)
+                          ▼ UR-ARCH (User Review)
                           │
+Phase 3: Iteration Planning
+──────────────────────────
 ┌─────────────────────────────────────────────────────────────────┐
-│ 6. ai-orchestrator (TDD Development Loop)                       │
+│ 5. project-management                                           │
+│    • Ingest all artifacts (US, FR, NFR, SC, TC, UJ, WF, ARCH) │
+│    • Build Epic → Story backlog                                 │
+│    • Break down DEV-xxx tasks per layer                         │
+│    • Slice into iterations with SC + TC as Definition of Done   │
+│    • Produce traceability matrix                                │
+│    • Publish Project Backlogs                                   │
+└─────────────────────────┬───────────────────────────────────────┘
+                          │
+                          ▼ UR-PM (User Review)
+                          │
+Phase 4: Iteration Execution (repeat per scenario)
+──────────────────────────────────────────────────
+┌─────────────────────────────────────────────────────────────────┐
+│ 6. ai-orchestrator (picks up SC-xxx from Project Backlogs)      │
 │                                                                 │
 │    ┌─────────────────────────────────────────────────────────┐  │
 │    │  For each TC-xxx:                                       │  │
-│    │    RED    → Write failing test                          │  │
-│    │    GREEN  → Implement minimum code                       │  │
-│    │    REFACTOR → Clean up                                  │  │
+│    │    RED      → Write failing test                        │  │
+│    │    GREEN    → Implement minimum code                    │  │
+│    │    REFACTOR → Clean up without changing behavior        │  │
 │    │    REPEAT                                               │  │
+│    │                                                         │  │
+│    │  ⚠️  If Green fails 5+ times → Escalate to User        │  │
 │    └─────────────────────────────────────────────────────────┘  │
 │                                                                 │
 │    • Run full test suite                                        │
 │    • Generate technical documentation                           │
-│    • Signal ready for review                                    │
 └─────────────────────────┬───────────────────────────────────────┘
                           │
-                          │
-Phase 4: Review & UAT
-────────────────────
+Phase 5: Review & UAT
+─────────────────────
 ┌─────────────────────────────────────────────────────────────────┐
-│ 7. Human Review + UAT                                           │
-│    • Code review                                                │
-│    • Manual testing verification                                │
+│    UAT (PM + Software Tester)                                   │
+│    • Automated suite verification                               │
+│    • Manual scenario walkthrough                                │
 │    • Stakeholder acceptance                                     │
 └─────────────────────────┬───────────────────────────────────────┘
+                          │
+                          ▼ UR-UAT (User Review)
                          │
           ┌──────────────┼──────────────┐
           │              │              │
           ▼              ▼              ▼
-       ┌─────┐      ┌──────┐      ┌────────┐
-       │ Bug │      │ Req  │      │ Pass   │
-       │ Fix │      │ Wrong│      │        │
-       └──┬──┘      └──┬───┘      └───┬────┘
-          │            │              │
-          ▼            ▼              ▼
-     DEVLOOP        PM          Next scenario or...
+       ┌─────┐      ┌──────┐      ┌──────────┐
+       │ Bug │      │ Req  │      │   Pass   │
+       │ Fix │      │Wrong │      │          │
+       └──┬──┘      └──┬───┘      └────┬─────┘
+          │            │               │
+          ▼            ▼               ▼
+      DEVLOOP         PM        Next scenario → ORC
+                               (or all done → Phase 6)
 
-Phase 5: Documentation & Retrospect
-───────────────────────────────────
+Phase 6: Documentation & Retrospective
+───────────────────────────────────────
 ┌─────────────────────────────────────────────────────────────────┐
-│ 8. technical-writer (after all scenarios in iteration pass)    │
+│ 7. technical-writer (all scenarios in iteration pass)          │
 │    • Write user guides                                          │
 │    • Create tutorials                                           │
 │    • Write FAQ and troubleshooting                              │
 └─────────────────────────┬───────────────────────────────────────┘
                           │
-                          ▼ HR-TW (Human Review)
+                          ▼ UR-DOC (User Review)
                           │
 ┌─────────────────────────────────────────────────────────────────┐
-│ 9. project-management (Iteration Retrospect)                    │
+│    project-management — Iteration Update                        │
 │    • Generate release notes                                     │
 │    • Adapt backlog for next iteration                           │
-│    • Start next iteration → Back to PM                          │
-└─────────────────────────────────────────────────────────────────┘
-```
-                    │
-                    ▼
-Phase 3: Iteration Execution (repeat per scenario)
-──────────────────────────────────────────────────
+└─────────────────────────┬───────────────────────────────────────┘
+                          │
 ┌─────────────────────────────────────────────────────────────────┐
-│ 5. software-architecture                                        │
-│    • Design API contract for scenario                           │
-│    • Design database schema                                     │
-│    • Generate OpenAPI spec                                      │
-│    • Record ADRs                                                │
-└─────────────────────────────────────────────────────────────────┘
-                    │
-                    ▼
-┌─────────────────────────────────────────────────────────────────┐
-│ 6. ai-orchestrator (TDD Development Loop)                       │
-│                                                                 │
-│    ┌─────────────────────────────────────────────────────────┐  │
-│    │  For each TC-xxx:                                       │  │
-│    │    RED    → Write failing test                          │  │
-│    │    GREEN  → Implement minimum code                      │  │
-│    │    REFACTOR → Clean up                                  │  │
-│    │    REPEAT                                               │  │
-│    └─────────────────────────────────────────────────────────┘  │
-│                                                                 │
-│    • Run full test suite                                        │
-│    • Generate technical documentation                           │
-│    • Signal ready for review                                    │
-└─────────────────────────────────────────────────────────────────┘
-                    │
-                    ▼
-Phase 4: Review & UAT
-─────────────────────
-┌─────────────────────────────────────────────────────────────────┐
-│ 7. Human Review + UAT                                           │
-│    • Code review                                                │
-│    • Manual testing verification                                │
-│    • Stakeholder acceptance                                     │
-└─────────────────────────────────────────────────────────────────┘
-                    │
-         ┌─────────┼─────────┐
-         │         │         │
-         ▼         ▼         ▼
-      ┌─────┐  ┌──────┐  ┌────────┐
-      │ Bug │  │ Req  │  │ Pass   │
-      │ Fix │  │ Wrong│  │        │
-      └──┬──┘  └──┬───┘  └───┬────┘
-         │        │          │
-         ▼        ▼          ▼
-    DEVLOOP    PM        Next scenario or...
-
-Phase 5: Documentation & Retrospect
-───────────────────────────────────
-┌─────────────────────────────────────────────────────────────────┐
-│ 8. technical-writer (after all scenarios in iteration pass)    │
-│    • Write user guides                                          │
-│    • Create tutorials                                           │
-│    • Write FAQ and troubleshooting                              │
-└─────────────────────────────────────────────────────────────────┘
-                    │
-                    ▼
-┌─────────────────────────────────────────────────────────────────┐
-│ 9. project-management (Iteration Retrospect)                    │
-│    • Generate release notes                                     │
-│    • Adapt backlog for next iteration                           │
-│    • Start next iteration → Back to PM                          │
-└─────────────────────────────────────────────────────────────────┘
+│    Retrospective                                                │
+│    • User creates rules / conditions to improve next iteration  │
+└─────────────────────────┬───────────────────────────────────────┘
+                          │
+                          ▼ next iteration → ORC
 ```
 
 ---
@@ -588,66 +583,70 @@ US-xxx ────────────┐  SC-xxx ────────�
 FR-xxx ────────────┤  TC-xxx ────────────┤     WF-xxx ─────┤
 NFR-xxx ───────────┤  Test Data ─────────┤     UI-xxx ─────┤
 Field Specs ───────┘                     │     Design Sys ─┘
-           │                              │
-           │ HR-BA                        │ HR-UX
-           ▼                              ▼
-           └──────────┬───────────────────┘
-                      │
-                      ▼ HR-SWT
-            project-management
-            ──────────────────
-            EPIC-xxx
-            DEV-xxx
-            Iterations ──────────────┐
-            Traceability             │
-                                     │
-                                     ▼ HR-PM
-                          software-architecture
-                          ─────────────────────
-                          API Contract
-                          DB Schema
-                          ADRs ─────────────────┐
-                          OpenAPI               │
-                                                │
-                                                ▼ HR-ARCH
-                                     ai-orchestrator
-                                     ───────────────
-                                     Test Code
-                                     Implementation
-                                     Migrations
-                                     Tech Docs ─────────┐
-                                                        │
-                                     ┌──────────────────┘
-                                     │
-                                     ▼
-                             Human Review / UAT
-                                     │
-                                     ▼ (on pass)
-                             technical-writer
-                             ────────────────
-                             User Guides
-                             Tutorials
-                             FAQ
-                                       │ HR-TW
-                                       ▼
-                             Iteration Retrospect
+           │                              │         │
+           │ UR-BA                        │         │
+           ▼                              ▼         │
+           └──────────┬───────────────────┘         │
+                      │                             │
+                      ▼ UR-SWT           ▼ UR-UX ──┘
+                      └──────────┬───────┘
+                                 │ (both feed into System Design)
+                                 ▼
+                    software-architecture (C4 Model)
+                    ──────────────────────────────────
+                    C4 L1: System Context Diagram
+                    C4 L2: Container Diagram
+                    C4 L3: Component Diagram
+                    C4 L4: API Contract + DB Schema ──┐
+                           ADRs + OpenAPI Spec        │
+                                                      │
+                                                      ▼ UR-ARCH
+                                         project-management
+                                         ──────────────────
+                                         EPIC-xxx
+                                         DEV-xxx
+                                         Iterations (Project Backlogs)
+                                         Traceability ────────────────┐
+                                                                      │
+                                                                      ▼ UR-PM
+                                                           ai-orchestrator
+                                                           ───────────────
+                                                           Test Code
+                                                           Implementation
+                                                           Migrations
+                                                           Tech Docs ──────┐
+                                                                           │
+                                                           ┌───────────────┘
+                                                           │
+                                                           ▼
+                                                    UAT → UR-UAT
+                                                           │
+                                                           ▼ (on pass)
+                                                   technical-writer
+                                                   ────────────────
+                                                   User Guides
+                                                   Tutorials
+                                                   FAQ
+                                                         │ UR-DOC
+                                                         ▼
+                                              Iteration Update + Retrospective
 ```
 
 ---
 
 ## Quick Reference
 
-| Phase | Agent | Input | Output | Human Review |
-|-------|-------|-------|--------|--------------|
-| Discovery | business-analysis | Stakeholder brief | US, FR, NFR | ✓ HR-BA |
-| Discovery | software-tester-design | US, FR, NFR | SC, TC, Test Data | ✓ HR-SWT |
-| Discovery | ux-ui-designer | US, FR, NFR | UJ, WF, UI, Design System | ✓ HR-UX |
-| Planning | project-management | All above | EPIC, DEV, Iterations, Traceability | ✓ HR-PM |
-| Architecture | software-architecture | SC, TC, DEV | API Contract, DB Schema, ADR, OpenAPI | ✓ HR-ARCH |
-| Development | ai-orchestrator | SC, TC, Architecture | Test Code, Impl Code, Tech Docs | — |
-| Review | Human | Implementation | Approved / Rejected | — |
-| Documentation | technical-writer | Approved Feature | User Docs | ✓ HR-TW |
-| Retrospect | project-management | Iteration Results | Release Notes | — |
+| Phase         | Agent                     | Input                             | Output                                                                         | User Review |
+| ------------- | ------------------------- | --------------------------------- | ------------------------------------------------------------------------------ | ----------- |
+| Discovery     | business-analysis         | Stakeholder brief                 | US, FR, NFR                                                                    | ✓ UR-BA     |
+| Discovery     | software-tester-design    | US, FR, NFR                       | SC, TC, Test Data                                                              | ✓ UR-SWT    |
+| Discovery     | ux-ui-designer            | US, FR, NFR                       | UJ, WF, UI, Design System                                                      | ✓ UR-UX     |
+| System Design | software-architecture     | SC, TC, UJ, UI                    | C4 L1–L4: Context, Container, Component, API Contract, DB Schema, ADR, OpenAPI | ✓ UR-ARCH   |
+| Planning      | project-management        | All above                         | EPIC, DEV, Iterations, Traceability, Backlogs                                  | ✓ UR-PM     |
+| Development   | ai-orchestrator           | SC-xxx from Backlogs + C4 L4 Arch | Test Code, Impl Code, Tech Docs                                                | —           |
+| Review        | UAT                       | Implementation                    | Approved / Rejected                                                            | ✓ UR-UAT    |
+| Documentation | technical-writer          | Approved Iteration                | User Docs                                                                      | ✓ UR-DOC    |
+| Retrospective | project-management + User | Iteration Results                 | Release Notes, Improved Rules                                                  | —           |
 
 ---
 
@@ -671,65 +670,71 @@ skill: technical-writer       → Write user documentation
 ## Key Principles
 
 ### 1. Shift-Left Testing
+
 - Design tests **before** implementation
 - Test thinking starts at requirements phase
 - TC-xxx defines Definition of Done
 
 ### 2. TDD (Test-Driven Development)
+
 - RED: Write failing test first
 - GREEN: Write minimum code to pass
 - REFACTOR: Clean up without changing behavior
 - Never write implementation without a failing test
-- **Green Escalation:** If the test still fails after ~10 consecutive implementation attempts, stop and escalate to a human with a full summary of what was tried and what is blocking — do not keep retrying indefinitely
+- **Green Escalation:** If the test still fails after ~5 consecutive implementation attempts, stop and escalate to the user with a full summary of what was tried and what is blocking — do not keep retrying indefinitely
 
-### 3. Just-Enough Architecture
-- Design only what the current scenario needs
-- No big upfront design
+### 3. Just-Enough Architecture — C4 Model
+
+- Design only what the current scenario needs — no big upfront design
+- Follow the C4 Model drill-down: L1 Context → L2 Container → L3 Component → L4 Code
+- Architecture is produced **before** project planning, so PM can scope tasks against a concrete design
 - Architecture evolves with each scenario
 
 ### 4. Human-in-the-Loop
+
 - Human review is a **hard gate**
 - AI orchestrator signals ready, does not approve
 - No merge without human approval
 
 ### 5. Traceability
+
 - Every artifact traces to its source
 - US → FR → SC → TC → DEV → Code
 - End-to-end visibility via traceability matrix
 
 ---
 
-## Human Review Artifacts
+## User Review Gates
 
-Human review is a **mandatory gate** at each phase transition. Each step requires sign-off before proceeding.
+User review is a **mandatory gate** at each phase transition. No phase may proceed without approval.
 
-### Human Review Sign-off
+### User Review Sign-off
 
-| Field | Description |
-|-------|-------------|
-| **ID** | `HR-[PHASE]-###` (e.g., `HR-BA-001`, `HR-SWT-001`) |
-| **Phase** | BA, SWT, UX, PM, ARCH, ORC, TW |
-| **Reviewer** | Human approver name/role |
-| **Date** | Review completion date |
-| **Status** | Approved / Rejected / Changes Requested |
-| **Feedback** | Comments and requested changes |
-| **Artifacts Reviewed** | Links to reviewed artifacts |
+| Field                  | Description                                         |
+| ---------------------- | --------------------------------------------------- |
+| **ID**                 | `UR-[PHASE]-###` (e.g., `UR-BA-001`, `UR-ARCH-001`) |
+| **Phase**              | BA, SWT, UX, ARCH, PM, UAT, DOC                     |
+| **Reviewer**           | User / stakeholder name                             |
+| **Date**               | Review completion date                              |
+| **Status**             | Approved / Rejected / Changes Requested             |
+| **Feedback**           | Comments and requested changes                      |
+| **Artifacts Reviewed** | Links to reviewed artifacts                         |
 
 ### Review Checkpoints
 
-| Checkpoint | Phase | Criteria |
-|------------|-------|----------|
-| HR-1 | BA | Requirements complete, clear, testable |
-| HR-2 | SWT | Test scenarios cover all requirements |
-| HR-3 | UX | Designs meet accessibility and usability standards |
-| HR-4 | PM | Iteration plan feasible, dependencies mapped |
-| HR-5 | ARCH | Architecture sound, trade-offs documented |
-| HR-6 | ORC | Code quality, tests pass, docs complete |
-| HR-7 | TW | Documentation accurate and user-friendly |
+| Gate    | Phase               | Criteria                                                              |
+| ------- | ------------------- | --------------------------------------------------------------------- |
+| UR-BA   | Product Discovery   | Requirements complete, clear, testable                                |
+| UR-SWT  | Test Design         | Test scenarios cover all requirements and edge cases                  |
+| UR-UX   | UX/UI Design        | Designs meet accessibility and usability standards                    |
+| UR-ARCH | System Design       | C4 diagrams accurate; API contract + DB schema sound; ADRs documented |
+| UR-PM   | Iteration Planning  | Backlog feasible, dependencies mapped, SC+TC assigned per iteration   |
+| UR-UAT  | Iteration Execution | All TC-xxx pass; scenario behaviour matches requirements              |
+| UR-DOC  | Documentation       | User documentation accurate, clear, and complete                      |
 
 ### Storage
 
-All human review sign-offs are stored in: `docs/reviews/human-reviews.md`
+All user review sign-offs are stored in: `docs/reviews/user-reviews.md`
 
 ---
 
@@ -737,5 +742,5 @@ All human review sign-offs are stored in: `docs/reviews/human-reviews.md`
 
 - [AGENTS.md](./AGENTS.md) — Code style guidelines
 - [CLAUDE.md](./CLAUDE.md) — Repository overview
-- [ARTIFACTS.md](./.opencode/artifacts/ARTIFACTS.md) — Artifact templates and conventions
-- [flow-v1.mmd](./flow-v1.mmd) — Mermaid workflow diagram
+- [ARTIFACTS.md](./.claude/artifacts/ARTIFACTS.md) — Artifact templates and conventions
+- [workflow.mmd](./workflow.mmd) — Mermaid workflow diagram

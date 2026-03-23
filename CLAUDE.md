@@ -66,6 +66,36 @@ All artifact templates, storage locations, and naming conventions are defined in
 - `.opencode/skills/*/SKILL.md` — Individual skill definitions (mirror)
 - `.claude/artifacts/ARTIFACTS.md` — Centralized artifact storage, naming conventions, and templates
 - `.opencode/artifacts/ARTIFACTS.md` — Mirror of artifact definitions
+- `.claude/rules/` — Hard constraints all agents must follow (coding, testing, architecture, security, workflow)
+- `.opencode/rules/` — Mirror of rules
+- `.claude/knowledge/` — Reference material agents consult for domain and technical context (informational, not constraints)
+- `.opencode/knowledge/` — Mirror of knowledge base
+
+### Rules
+
+Rules live in `.claude/rules/` (mirrored in `.opencode/rules/`). Each file covers one domain:
+
+| File | Purpose |
+|------|---------|
+| `coding.md` | Code style, patterns, and anti-patterns |
+| `testing.md` | Testing standards and coverage requirements |
+| `architecture.md` | Architectural constraints and decisions |
+| `security.md` | Security rules and forbidden patterns |
+| `workflow.md` | Agent behaviour rules (escalation, review gates) |
+
+All skills **must** read applicable rule files before producing output. Rules are hard constraints — they override default behaviour. When a rule conflicts with a user request, flag the conflict before proceeding.
+
+### Knowledge Base
+
+Knowledge lives in `.claude/knowledge/` (mirrored in `.opencode/knowledge/`). Organised into three subdirectories:
+
+| Directory | Purpose |
+|-----------|---------|
+| `domain/` | Business domain concepts, glossary, entities |
+| `tech/` | Technology decisions, stack reference, integrations |
+| `process/` | Process context, team conventions, project history |
+
+Agents should consult relevant knowledge files when they need domain or technical context. Knowledge describes **what is true**, not what must be done (see `rules/` for constraints).
 
 ## Ignored Directories
 

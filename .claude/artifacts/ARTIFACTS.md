@@ -9,47 +9,53 @@ This document defines the centralized artifact system shared across all skills. 
 ```
 project-root/
 ├── docs/
-│   ├── requirements/           # Business Analysis outputs
-│   │   ├── user-stories.md     # US-xxx definitions
-│   │   ├── functional-requirements.md    # FR-xxx specifications
-│   │   ├── non-functional-requirements.md # NFR-xxx specifications
-│   │   └── field-specifications.md       # Input/Output field specs
-│   │
-│   ├── test-design/            # Software Tester Design outputs
-│   │   ├── sut-definition.md   # System Under Test
-│   │   ├── test-scenarios.md   # SC-xxx definitions
-│   │   ├── test-cases.md       # TC-xxx specifications
-│   │   └── test-data.md        # Test data catalogue
-│   │
-│   ├── ux-design/              # UX/UI Design outputs
-│   │   ├── user-personas.md    # User persona definitions
-│   │   ├── user-journeys.md    # UJ-xxx user journey maps
-│   │   ├── wireframes.md       # WF-xxx wireframe specs
-│   │   ├── ui-specifications.md # UI-xxx component specs
-│   │   └── design-system.md    # Design tokens and guidelines
-│   │
-│   ├── project/                # Project Management outputs
-│   │   ├── backlog.md          # Epic and Story backlog
-│   │   ├── iterations/         # Iteration cards
-│   │   │   ├── iteration-1.md
-│   │   │   └── iteration-N.md
-│   │   ├── traceability-matrix.md  # US → FR → DEV → TC mapping
-│   │   └── release-notes.md    # Release notes and changelog
-│   │
-│   ├── architecture/           # Software Architecture outputs
-│   │   ├── api-contracts.md    # API endpoint specifications
-│   │   ├── database-schema.md  # DB tables, columns, indexes
-│   │   ├── integration-contracts.md  # External service contracts
-│   │   ├── adrs/               # Architecture Decision Records
-│   │   │   └── ADR-001-*.md
-│   │   └── openapi/            # OpenAPI specifications
-│   │       └── [feature]-api.yaml
-│   │
-│   └── user-guide/             # Technical Writer outputs
-│       ├── getting-started.md
-│       ├── tutorials/
-│       ├── faq.md
-│       └── troubleshooting.md
+│   └── features/
+│       └── [feature-name]/         # One folder per feature (e.g. auth, payment)
+│           └── [version]/          # Version of that feature (e.g. v1, v2)
+│               ├── requirements/           # Business Analysis outputs
+│               │   ├── user-stories.md     # US-xxx definitions
+│               │   ├── functional-requirements.md    # FR-xxx specifications
+│               │   ├── non-functional-requirements.md # NFR-xxx specifications
+│               │   └── field-specifications.md       # Input/Output field specs
+│               │
+│               ├── test-design/            # Software Tester Design outputs
+│               │   ├── sut-definition.md   # System Under Test
+│               │   ├── test-scenarios.md   # SC-xxx definitions
+│               │   ├── test-cases.md       # TC-xxx specifications
+│               │   └── test-data.md        # Test data catalogue
+│               │
+│               ├── ux-design/              # UX/UI Design outputs
+│               │   ├── user-personas.md    # User persona definitions
+│               │   ├── user-journeys.md    # UJ-xxx user journey maps
+│               │   ├── wireframes.md       # WF-xxx wireframe specs
+│               │   ├── ui-specifications.md # UI-xxx component specs
+│               │   └── design-system.md    # Design tokens and guidelines
+│               │
+│               ├── project/                # Project Management outputs
+│               │   ├── backlog.md          # Epic and Story backlog
+│               │   ├── iterations/         # Iteration cards
+│               │   │   ├── iteration-1.md
+│               │   │   └── iteration-N.md
+│               │   ├── traceability-matrix.md  # US → FR → DEV → TC mapping
+│               │   └── release-notes.md    # Release notes and changelog
+│               │
+│               ├── architecture/           # Software Architecture outputs (C4 Model)
+│               │   ├── system-context.md   # C4 L1 — People + Software Systems
+│               │   ├── containers.md       # C4 L2 — Apps, Services & Data Stores
+│               │   ├── components.md       # C4 L3 — Internal Components per Container
+│               │   ├── api-contracts.md    # C4 L4 — API endpoint specifications
+│               │   ├── database-schema.md  # C4 L4 — DB tables, columns, indexes
+│               │   ├── integration-contracts.md  # C4 L4 — External service contracts
+│               │   ├── adrs/               # Architecture Decision Records
+│               │   │   └── ADR-001-*.md
+│               │   └── openapi/            # C4 L4 — OpenAPI specifications
+│               │       └── [feature]-api.yaml
+│               │
+│               └── user-guide/             # Technical Writer outputs
+│                   ├── getting-started.md
+│                   ├── tutorials/
+│                   ├── faq.md
+│                   └── troubleshooting.md
 │
 └── tests/                      # Test implementation (AI Orchestrator)
     ├── unit/
@@ -639,7 +645,8 @@ erDiagram
 
 ```
 ┌─────────────────┐
-│ business-analysis │
+│ business-       │
+│ analysis        │
 │   CREATES:      │
 │   - US-xxx      │
 │   - FR-xxx      │
@@ -649,51 +656,58 @@ erDiagram
          ├──────────────────────────┐
          ▼                          ▼
 ┌─────────────────┐      ┌─────────────────┐
-│ software-tester │      │   ux-ui-design  │
-│   CREATES:      │      │   CREATES:      │
-│   - SC-xxx      │      │   - UJ-xxx      │
-│   - TC-xxx      │      │   - WF-xxx      │
-│   - Test Data   │      │   - UI-xxx      │
-└────────┬────────┘      │   - Design Sys  │
-         │               └────────┬────────┘
-         │ READS ALL ABOVE        │
-         ├────────────────────────┘
-         ▼
-┌─────────────────┐
-│ project-mgmt    │
-│   CREATES:      │
-│   - DEV-xxx     │
-│   - Iterations  │
-│   - Traceability│
-└────────┬────────┘
-         │ READS ITERATION SCOPE
-         ▼
-┌─────────────────┐
-│ software-arch   │
-│   CREATES:      │
-│   - API Contract│
-│   - DB Schema   │
-│   - ADRs        │
-│   - OpenAPI     │
-└────────┬────────┘
-         │ READS ARCH + TC
-         ▼
-┌─────────────────┐
-│ ai-orchestrator │
-│   CREATES:      │
-│   - Test Code   │
-│   - Impl Code   │
-│   - Migrations  │
-└────────┬────────┘
-         │ READS SC/TC
-         ▼
-┌─────────────────┐
-│ technical-writer│
-│   CREATES:      │
-│   - User Docs   │
-│   - Tutorials   │
-│   - FAQ         │
-└─────────────────┘
+│ software-tester │      │  ux-ui-design   │
+│ -design         │      │   CREATES:      │
+│   CREATES:      │      │   - UJ-xxx      │
+│   - SC-xxx      │      │   - WF-xxx      │
+│   - TC-xxx      │      │   - UI-xxx      │
+│   - Test Data   │      │   - Design Sys  │
+└────────┬────────┘      └────────┬────────┘
+         │                        │
+         │ READS SC/TC + UJ/UI    │
+         └────────────┬───────────┘
+                      ▼
+         ┌─────────────────────┐
+         │ software-arch       │
+         │ (C4 Model)          │
+         │   CREATES:          │
+         │   L1: Sys Context   │
+         │   L2: Containers    │
+         │   L3: Components    │
+         │   L4: API Contract  │
+         │       DB Schema     │
+         │       ADRs          │
+         │       OpenAPI       │
+         └──────────┬──────────┘
+                    │ READS ALL ABOVE + C4 ARCH
+                    ▼
+         ┌─────────────────────┐
+         │ project-mgmt        │
+         │   CREATES:          │
+         │   - DEV-xxx         │
+         │   - Iterations      │
+         │   - Backlogs        │
+         │   - Traceability    │
+         └──────────┬──────────┘
+                    │ READS BACKLOG SC/TC + ARCH
+                    ▼
+         ┌─────────────────────┐
+         │ ai-orchestrator     │
+         │   CREATES:          │
+         │   - Test Code       │
+         │   - Impl Code       │
+         │   - Migrations      │
+         │   - Tech Docs       │
+         └──────────┬──────────┘
+                    │ READS SC/TC (on pass)
+                    ▼
+         ┌─────────────────────┐
+         │ technical-writer    │
+         │   CREATES:          │
+         │   - User Docs       │
+         │   - Tutorials       │
+         │   - FAQ             │
+         └─────────────────────┘
 ```
 
 ---
@@ -712,21 +726,24 @@ Use the templates and naming conventions specified there.
 
 ## Quick Reference Card
 
-| When you need... | Look in... | Template Section |
-|------------------|------------|------------------|
-| User requirements | `docs/requirements/user-stories.md` | US Template |
-| What system must do | `docs/requirements/functional-requirements.md` | FR Template |
-| Quality attributes | `docs/requirements/non-functional-requirements.md` | NFR Template |
-| What to test | `docs/test-design/test-scenarios.md` | SC Template |
-| How to test | `docs/test-design/test-cases.md` | TC Template |
-| Test inputs | `docs/test-design/test-data.md` | Test Data Template |
-| User journeys | `docs/ux-design/user-journeys.md` | UJ Template |
-| Wireframes | `docs/ux-design/wireframes.md` | WF Template |
-| UI components | `docs/ux-design/ui-specifications.md` | UI Template |
-| Design tokens | `docs/ux-design/design-system.md` | Design System Template |
-| Task breakdown | `docs/project/backlog.md` | DEV Template |
-| Current sprint | `docs/project/iterations/iteration-N.md` | Iteration Card |
-| API specs | `docs/architecture/api-contracts.md` | API Template |
-| DB design | `docs/architecture/database-schema.md` | DB Template |
-| Design decisions | `docs/architecture/adrs/` | ADR Template |
-| End-to-end tracing | `docs/project/traceability-matrix.md` | Traceability Template |
+| When you need... | Look in... | C4 Level / Template |
+|------------------|------------|---------------------|
+| User requirements | `docs/features/[feature]/[version]/requirements/user-stories.md` | US Template |
+| What system must do | `docs/features/[feature]/[version]/requirements/functional-requirements.md` | FR Template |
+| Quality attributes | `docs/features/[feature]/[version]/requirements/non-functional-requirements.md` | NFR Template |
+| What to test | `docs/features/[feature]/[version]/test-design/test-scenarios.md` | SC Template |
+| How to test | `docs/features/[feature]/[version]/test-design/test-cases.md` | TC Template |
+| Test inputs | `docs/features/[feature]/[version]/test-design/test-data.md` | Test Data Template |
+| User journeys | `docs/features/[feature]/[version]/ux-design/user-journeys.md` | UJ Template |
+| Wireframes | `docs/features/[feature]/[version]/ux-design/wireframes.md` | WF Template |
+| UI components | `docs/features/[feature]/[version]/ux-design/ui-specifications.md` | UI Template |
+| Design tokens | `docs/features/[feature]/[version]/ux-design/design-system.md` | Design System Template |
+| Who uses the system + external systems | `docs/features/[feature]/[version]/architecture/system-context.md` | C4 L1 |
+| Apps, services, data stores + tech choices | `docs/features/[feature]/[version]/architecture/containers.md` | C4 L2 |
+| Internal structure per container | `docs/features/[feature]/[version]/architecture/components.md` | C4 L3 |
+| API specs | `docs/features/[feature]/[version]/architecture/api-contracts.md` | C4 L4 / API Template |
+| DB design | `docs/features/[feature]/[version]/architecture/database-schema.md` | C4 L4 / DB Template |
+| Design decisions | `docs/features/[feature]/[version]/architecture/adrs/` | ADR Template |
+| Task breakdown | `docs/features/[feature]/[version]/project/backlog.md` | DEV Template |
+| Current sprint | `docs/features/[feature]/[version]/project/iterations/iteration-N.md` | Iteration Card |
+| End-to-end tracing | `docs/features/[feature]/[version]/project/traceability-matrix.md` | Traceability Template |

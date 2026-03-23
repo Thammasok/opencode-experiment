@@ -1,14 +1,15 @@
-# Atoms — Base Components
+# Atoms — Base Components (shadcn/ui)
 
-Atoms are the smallest indivisible UI components. They accept no other components as children (only primitive content like text, icons, or images).
+All atomic components are from **shadcn/ui** (new-york style, neutral base). Import from `@/components/ui/`. Never hand-edit these files — use `cd web && pnpm shadcn add <component>` to add or update.
 
 ---
 
 ## Button
 
-**Variants:** `solid` | `outline` | `ghost` | `link` | `destructive`
-**Sizes:** `xs` | `sm` | `md` | `lg` | `xl`
-**States:** default | hover | active/pressed | focus | disabled | loading
+**Component:** `@/components/ui/button`
+**Variants:** `default` | `destructive` | `outline` | `secondary` | `ghost` | `link`
+**Sizes:** `default` | `sm` | `lg` | `icon`
+**States:** default | hover | active | focus | disabled | loading
 
 ### Anatomy
 ```
@@ -18,121 +19,147 @@ Atoms are the smallest indivisible UI components. They accept no other component
 ### Spec
 | Property | Value |
 |---|---|
-| Min height | 44px (touch target) |
-| Padding (md) | 12px 16px |
-| Font | `labelMd` (500 weight) |
-| Radius | `semantic.radius.button` from config |
-| Focus ring | `shadows.focusRing.default` |
-| Transition | `bg, border, color 150ms ease` |
+| Height (default) | 2.25rem (36px) |
+| Height (sm) | 1.75rem (28px) |
+| Height (lg) | 2.5rem (40px) |
+| Radius | `rounded-md` |
+| Font | `text-sm font-medium` |
+| Focus ring | `ring-ring / ring-offset-background` |
+| Transition | `colors 150ms ease` |
 
-### States
-- **disabled** — `opacity: 0.4`, `cursor: not-allowed`, no pointer events
-- **loading** — replace leading icon with spinner, maintain width, `aria-busy="true"`
+### Variants
+| Variant | Background | Text | Use for |
+|---------|-----------|------|---------|
+| `default` | `bg-primary` | `text-primary-foreground` | Primary CTA |
+| `destructive` | `bg-destructive` | `text-white` | Delete / danger |
+| `outline` | transparent + `border-input` | `text-foreground` | Secondary action |
+| `secondary` | `bg-secondary` | `text-secondary-foreground` | Tertiary action |
+| `ghost` | transparent | `text-foreground` | Icon buttons, nav items |
+| `link` | transparent | `text-primary` | Inline text links |
+
+### Usage
+```tsx
+import { Button } from '@/components/ui/button'
+
+<Button>Save</Button>
+<Button variant="destructive">Delete</Button>
+<Button variant="outline" size="sm">Cancel</Button>
+<Button variant="ghost" size="icon" aria-label="Close">
+  <XIcon className="h-4 w-4" />
+</Button>
+<Button disabled>Processing...</Button>
+```
 
 ### Accessibility
-- Must be a `<button>` element (not `<div>`)
-- `aria-label` required when icon-only
-- `aria-disabled="true"` + `tabindex="-1"` for disabled
-- `aria-busy="true"` when loading
-
-### Usage (React + Tailwind cva)
-```tsx
-const button = cva(
-  'inline-flex items-center justify-center gap-2 font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-40',
-  {
-    variants: {
-      variant: {
-        solid: 'bg-primary text-white hover:bg-primary/90',
-        outline: 'border border-primary text-primary hover:bg-primary/10',
-        ghost: 'hover:bg-neutral-100 text-neutral-800',
-        destructive: 'bg-red-600 text-white hover:bg-red-700',
-      },
-      size: {
-        xs: 'h-7 px-2.5 text-xs rounded-sm',
-        sm: 'h-8 px-3 text-sm rounded',
-        md: 'h-10 px-4 text-sm rounded-md',
-        lg: 'h-11 px-5 text-base rounded-md',
-        xl: 'h-12 px-6 text-base rounded-lg',
-      },
-    },
-    defaultVariants: { variant: 'solid', size: 'md' },
-  }
-)
-```
+- Use `<Button>` (not `<div>`) — it renders a native `<button>`
+- `aria-label` required when icon-only (`size="icon"`)
+- `disabled` prop sets `aria-disabled` and removes pointer events
+- Focus ring provided by shadcn's built-in styles
 
 ---
 
 ## Input
 
-**Variants:** `outline` | `filled` | `flushed` | `unstyled`
-**Sizes:** `sm` | `md` | `lg`
-**Types:** text | email | password | number | search | tel | url
-**States:** default | focus | filled | error | disabled | readonly
+**Component:** `@/components/ui/input`
+**Types:** text | email | password | number | search | tel | url | file
+**States:** default | focus | error | disabled
 
 ### Anatomy
 ```
 [label]
-[prefix?] [input-field] [suffix? / clear-btn? / password-toggle?]
+[input-field]
 [helper-text / error-message]
 ```
 
 ### Spec
 | Property | Value |
 |---|---|
-| Height (md) | 40px |
-| Padding | 12px |
-| Font | `textMd` |
-| Border | 1px `semantic.border.DEFAULT` |
-| Focus border | `semantic.border.focus` |
-| Error border | `semantic.error.DEFAULT` |
+| Height | 2.25rem (36px) |
+| Padding | `px-3 py-1` |
+| Border | `border border-input` |
+| Focus | `ring-1 ring-ring` |
+| Radius | `rounded-md` |
+| Font | `text-sm` |
+
+### Usage with Form (react-hook-form + shadcn Form)
+```tsx
+// Always import Form from @/components/ui/form — NOT from react-hook-form
+import { Form, FormField, FormItem, FormLabel, FormControl, FormMessage } from '@/components/ui/form'
+import { Input } from '@/components/ui/input'
+
+<Form {...form}>
+  <FormField
+    control={form.control}
+    name="email"
+    render={({ field }) => (
+      <FormItem>
+        <FormLabel>Email</FormLabel>
+        <FormControl>
+          <Input type="email" placeholder="you@example.com" {...field} />
+        </FormControl>
+        <FormMessage />
+      </FormItem>
+    )}
+  />
+</Form>
+```
 
 ### Accessibility
-- `<label>` must be associated via `for`/`htmlFor` or `aria-labelledby`
-- Error message needs `role="alert"` or `aria-live="polite"`
-- `aria-invalid="true"` on error state
-- `aria-describedby` links input to helper/error text
+- Always pair with `<FormLabel>` (associates via `htmlFor` automatically via shadcn Form)
+- `<FormMessage>` renders with `role="alert"` on error
+- `aria-invalid` set automatically by shadcn FormControl on error state
 
 ---
 
 ## Label
 
-**Variants:** `default` | `required` | `optional` | `disabled`
+**Component:** `@/components/ui/label`
 
 ```tsx
-<label htmlFor={id} className="text-sm font-medium text-neutral-700">
-  {children}
-  {required && <span aria-hidden="true" className="text-red-500 ml-0.5">*</span>}
-</label>
+import { Label } from '@/components/ui/label'
+
+<Label htmlFor="email">Email address</Label>
 ```
 
-- Never use `color` alone to indicate required state — pair with text or symbol
-- Font: `labelMd`
+- Font: `text-sm font-medium leading-none`
+- Disabled state: `opacity-70 cursor-not-allowed`
+- Never use color alone to indicate required — add `*` or "(required)" text
 
 ---
 
 ## Icon
 
-- Use `lucide-react` as default icon library (config: `framework.iconLibrary`)
-- Always provide `aria-hidden="true"` on decorative icons
-- Use `aria-label` + `role="img"` on standalone meaningful icons
-- Size scale: `16px` (sm) | `20px` (md, default) | `24px` (lg) | `32px` (xl)
+- Library: `lucide-react`
+- Always alias with `Icon` suffix: `import { Bell as BellIcon } from 'lucide-react'`
+- Exception: `DynamicIcon` from `lucide-react/dynamic` (no rename needed)
+- Always `aria-hidden="true"` on decorative icons
+- Standalone icons: add `aria-label` + `role="img"`
+- Standard sizes: `h-3 w-3` (xs) | `h-4 w-4` (sm, default) | `h-5 w-5` (md) | `h-6 w-6` (lg)
 
 ```tsx
-<Icon name="ChevronDown" size={20} aria-hidden="true" />
+import { Bell as BellIcon, Check as CheckIcon } from 'lucide-react'
+
+<BellIcon className="h-4 w-4" aria-hidden="true" />
 ```
 
 ---
 
 ## Badge
 
-**Variants:** `default` | `primary` | `success` | `warning` | `error` | `outline`
-**Sizes:** `sm` | `md`
+**Component:** `@/components/ui/badge`
+**Variants:** `default` | `secondary` | `destructive` | `outline`
 
-```
-Padding: 2px 8px | Radius: semantic.radius.badge | Font: labelSm
+```tsx
+import { Badge } from '@/components/ui/badge'
+
+<Badge>New</Badge>
+<Badge variant="destructive">Error</Badge>
+<Badge variant="secondary">Draft</Badge>
+<Badge variant="outline">Tag</Badge>
 ```
 
-- Max width: 120px with text truncation
+- Radius: `rounded-md`
+- Font: `text-xs font-semibold`
 - Never use color alone to convey status — pair with icon or text
 - `role="status"` for live-updating badges
 
@@ -140,66 +167,110 @@ Padding: 2px 8px | Radius: semantic.radius.badge | Font: labelSm
 
 ## Avatar
 
-**Variants:** image | initials | fallback-icon
-**Sizes:** `xs` (24px) | `sm` (32px) | `md` (40px) | `lg` (48px) | `xl` (64px) | `2xl` (96px)
+**Component:** `@/components/ui/avatar`
 
-- Always provide `alt` text for image avatars
-- Initials are `aria-hidden` — wrap with `<span aria-label="User name">`
-- Status dot (online/away/offline) needs `aria-label`
+```tsx
+import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar'
+
+<Avatar>
+  <AvatarImage src={user.avatarUrl} alt={user.name} />
+  <AvatarFallback>{user.name[0]}</AvatarFallback>
+</Avatar>
+```
+
+- Radius: `rounded-full`
+- Default size: `h-8 w-8` — override with className
+- Fallback renders first letter of name when image fails or is absent
+- Always provide `alt` text on `AvatarImage`
 
 ---
 
 ## Checkbox
 
-**States:** unchecked | checked | indeterminate | disabled
+**Component:** `@/components/ui/checkbox`
 
-- Must be a real `<input type="checkbox">` — never a styled div
-- `indeterminate` state set via JS: `el.indeterminate = true`
-- `aria-checked="mixed"` for indeterminate
-- Click target minimum 44×44px (includes visible label)
+```tsx
+import { Checkbox } from '@/components/ui/checkbox'
 
----
+<div className="flex items-center space-x-2">
+  <Checkbox id="terms" />
+  <Label htmlFor="terms">Accept terms</Label>
+</div>
+```
 
-## Radio
-
-**States:** unselected | selected | disabled
-
-- Group wrapped in `<fieldset>` with `<legend>`
-- `name` attribute must be same for all radios in group
-- Arrow key navigation within group (native behavior)
+- Built on Radix UI `CheckboxPrimitive`
+- `checked` / `onCheckedChange` for controlled usage
+- `indeterminate` via `checked="indeterminate"`
+- Click target includes associated label
 
 ---
 
 ## Toggle (Switch)
 
-**States:** off | on | disabled
+**Component:** `@/components/ui/switch`
 
 ```tsx
-<button
-  role="switch"
-  aria-checked={checked}
-  aria-label="Enable notifications"
-  className="..."
-/>
+import { Switch } from '@/components/ui/switch'
+
+<div className="flex items-center space-x-2">
+  <Switch id="notifications" />
+  <Label htmlFor="notifications">Enable notifications</Label>
+</div>
 ```
 
-- Must use `role="switch"` + `aria-checked`
-- Labelled via `aria-label` or `aria-labelledby`
-- Click + Enter + Space activate toggle
+- Renders as `role="switch"` with `aria-checked`
+- Always pair with a `<Label>` for accessible naming
 
 ---
 
 ## Tooltip
 
-**Trigger:** hover (150ms delay) | focus (immediate)
-**Position:** top | right | bottom | left (auto-flip when near viewport edge)
+**Component:** `@/components/ui/tooltip` — requires `<TooltipProvider>` in tree
 
 ```tsx
-<div role="tooltip" id="tip-id">Tooltip content</div>
-<button aria-describedby="tip-id">Trigger</button>
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip'
+
+<TooltipProvider>
+  <Tooltip>
+    <TooltipTrigger asChild>
+      <Button variant="ghost" size="icon" aria-label="Settings">
+        <SettingsIcon className="h-4 w-4" aria-hidden="true" />
+      </Button>
+    </TooltipTrigger>
+    <TooltipContent>Settings</TooltipContent>
+  </Tooltip>
+</TooltipProvider>
 ```
 
-- Max width: 240px with text wrapping
-- Never put interactive content inside tooltip
-- Hide on Escape, mouse-leave, blur
-- Don't use for critical information — it's not accessible on touch
+- Delay: 200ms open, 0ms close
+- Never put interactive content inside `TooltipContent`
+- Don't use for critical information — not accessible on touch devices
+
+---
+
+## Skeleton
+
+**Component:** `@/components/ui/skeleton`
+
+```tsx
+import { Skeleton } from '@/components/ui/skeleton'
+
+<Skeleton className="h-4 w-48" />
+<Skeleton className="h-10 w-full rounded-md" />
+```
+
+- Use to match the shape of content being loaded
+- Animate via `animate-pulse` (built-in)
+
+---
+
+## Separator
+
+**Component:** `@/components/ui/separator`
+
+```tsx
+import { Separator } from '@/components/ui/separator'
+
+<Separator />                          {/* horizontal */}
+<Separator orientation="vertical" />   {/* vertical */}
+```
